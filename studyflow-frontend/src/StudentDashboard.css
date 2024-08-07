@@ -1,0 +1,52 @@
+.student-dashboard {
+  padding: 20px;
+  text-align: center;
+}
+
+.dashboard-sections {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
+.dashboard-section {
+  flex: 1 1 45%;
+  max-width: 45%;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 20px;
+  margin: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-section h3 {
+  margin-top: 0;
+}
+
+.dashboard-link {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+.dashboard-link:hover {
+  background-color: #0056b3;
+}
+
+.logout-button {
+  padding: 10px 15px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background-color: #c82333;
+}

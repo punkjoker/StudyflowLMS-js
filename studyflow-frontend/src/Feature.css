@@ -1,0 +1,17 @@
+.feature {
+  padding: 20px;
+  max-width: 600px;
+  margin: auto;
+}
+
+.feature ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.feature li {
+  background-color: #f4f4f4;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 5px;
+}

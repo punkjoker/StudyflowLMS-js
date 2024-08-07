@@ -1,0 +1,29 @@
+.home {
+  text-align: center;
+  padding: 20px;
+}
+
+.intro-header {
+  margin-bottom: 40px;
+}
+
+.slideshow-container {
+  width: 70%;
+  margin: auto;
+}
+
+.each-slide > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  background-size: cover;
+  background-position: center;
+}
+
+.each-slide span {
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+}

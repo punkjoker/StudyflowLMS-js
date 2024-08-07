@@ -1,0 +1,43 @@
+.assignment-feedback {
+  padding: 20px;
+}
+
+.assignment-feedback form {
+  display: flex;
+  flex-direction: column;
+}
+
+.assignment-feedback label {
+  margin: 5px 0;
+}
+
+.assignment-feedback input,
+.assignment-feedback select,
+.assignment-feedback textarea {
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.assignment-feedback button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.assignment-feedback button:hover {
+  background-color: #0056b3;
+}
+
+.message {
+  margin-top: 10px;
+  color: #28a745; /* Green for success messages */
+}
+
+.error-message {
+  color: #dc3545; /* Red for error messages */
+}

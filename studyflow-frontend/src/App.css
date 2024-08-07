@@ -1,0 +1,158 @@
+/* src/App.css */
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #f4a261, #e76f51, #2a9d8f, #264653);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+  color: black;
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+header {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 1em 0;
+  text-align: center;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+nav a {
+  color: black;
+  padding: 1em;
+  text-decoration: none;
+  text-align: center;
+}
+
+nav a:hover {
+  background-color: #8BC34A;
+  color: white;
+}
+
+.container {
+  padding: 2em;
+}
+
+.hero {
+  position: relative;
+  height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: 2em;
+  color: white;
+}
+
+.hero img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  animation: slideshow 15s infinite;
+}
+
+@keyframes slideshow {
+  0% { opacity: 1; }
+  33% { opacity: 0; }
+  66% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.hero img:nth-child(2) {
+  animation-delay: 5s;
+}
+
+.hero img:nth-child(3) {
+  animation-delay: 10s;
+}
+
+.features {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 2em;
+}
+
+.feature {
+  background-color: white;
+  margin: 1em;
+  padding: 2em;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  flex: 1 1 30%;
+  text-align: center;
+}
+
+.feature i {
+  font-size: 3em;
+  margin-bottom: 0.5em;
+  color: #8BC34A;
+}
+
+.login-section, .signup-section {
+  background-color: white;
+  padding: 2em;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  margin: 2em auto;
+  max-width: 400px;
+}
+
+.login-section input[type="text"], .login-section input[type="password"],
+.signup-section input[type="text"], .signup-section input[type="password"],
+.signup-section input[type="email"] {
+  width: 80%;
+  padding: 1em;
+  margin: 0.5em 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.login-section button, .signup-section button {
+  padding: 1em 2em;
+  border: none;
+  border-radius: 5px;
+  background-color: #8BC34A;
+  color: white;
+  cursor: pointer;
+  max-width: 200px;
+}
+
+.login-section button:hover, .signup-section button:hover {
+  background-color: #7CB342;
+}
+
+.login-section a, .signup-section a {
+  color: #8BC34A;
+  display: block;
+  margin: 1em 0;
+  text-decoration: none;
+}
+
+.login-section a:hover, .signup-section a:hover {
+  text-decoration: underline;
+}
+
+footer {
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 1em 0;
+  width: 100%;
+}

@@ -1,0 +1,57 @@
+/* ManageAssignments.css */
+
+.manage-assignments {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f7f7f7;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.manage-assignments h3 {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.manage-assignments form {
+  display: flex;
+  flex-direction: column;
+}
+
+.manage-assignments label {
+  font-size: 1em;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.manage-assignments input[type="text"],
+.manage-assignments input[type="date"],
+.manage-assignments select {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.manage-assignments button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.manage-assignments button:hover {
+  background-color: #0056b3;
+}
+
+.message {
+  margin-top: 20px;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #e0ffe0;
+  color: #3c763d;
+}

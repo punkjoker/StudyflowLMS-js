@@ -1,0 +1,9 @@
+.about {
+  padding: 20px;
+  max-width: 600px;
+  margin: auto;
+}
+
+.about p {
+  margin: 10px 0;
+}

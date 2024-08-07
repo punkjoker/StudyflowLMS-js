@@ -1,0 +1,41 @@
+.course-progress {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .course-progress h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2em;
+  }
+  
+  .course-progress ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .course-progress li {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 5px;
+  }
+  
+  .unit-details {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .unit-details h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.5em;
+    color: #333;
+  }
+  
+  .unit-details p {
+    margin: 0 0 10px 0;
+    color: #666;
+  }
+  

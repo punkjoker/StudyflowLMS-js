@@ -1,0 +1,41 @@
+.instructor-dashboard {
+  padding: 20px;
+}
+
+h2 {
+  text-align: center;
+}
+
+.dashboard-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.dashboard-section {
+  width: 45%;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.dashboard-section.left {
+  align-self: flex-start;
+}
+
+.dashboard-section.right {
+  align-self: flex-end;
+}
+
+.dashboard-link {
+  display: inline-block;
+  margin-top: 10px;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.dashboard-link:hover {
+  text-decoration: underline;
+}

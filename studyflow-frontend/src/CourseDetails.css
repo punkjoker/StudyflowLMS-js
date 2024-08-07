@@ -1,0 +1,39 @@
+.course-details {
+  padding: 20px;
+}
+
+.course-details h2 {
+  margin-bottom: 20px;
+}
+
+.course-details section {
+  margin-bottom: 30px;
+}
+
+.course-details label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.course-details input,
+.course-details textarea,
+.course-details select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.course-details button {
+  padding: 10px 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.course-details button:hover {
+  background-color: #45a049;
+}
