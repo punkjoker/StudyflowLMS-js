@@ -1,84 +1,52 @@
-/* CourseDetails.css */
-
-.course-details {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.course-details h2 {
-  font-size: 2em;
-  margin-bottom: 10px;
-  color: #333;
-}
-
-.course-details p {
-  font-size: 1.2em;
-  color: #666;
-  margin-bottom: 20px;
-}
-
-.course-sections {
+.manage-assignments {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-.course-section {
-  background-color: #f9f9f9;
-  padding: 15px;
-  border-radius: 5px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-}
-
-.course-section h3 {
-  font-size: 1.5em;
-  margin-bottom: 10px;
-  color: #444;
-}
-
-.course-section form {
-  display: flex;
   align-items: center;
-  margin-bottom: 15px;
+  margin: 2rem auto;
+  padding: 2rem;
+  width: 80%;
+  max-width: 600px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
 }
 
-.course-section input[type="file"],
-.course-section input[type="text"] {
-  flex: 1;
-  padding: 10px;
-  margin-right: 10px;
+.manage-assignments h2 {
+  margin-bottom: 1.5rem;
+}
+
+.manage-assignments form {
+  width: 100%;
+}
+
+.manage-assignments form div {
+  margin-bottom: 1rem;
+}
+
+.manage-assignments form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.manage-assignments form input,
+.manage-assignments form textarea {
+  width: 100%;
+  padding: 0.5rem;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 4px;
 }
 
-.course-section button {
-  padding: 10px 15px;
+.manage-assignments form button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
   background-color: #007bff;
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
 }
 
-.course-section button:hover {
+.manage-assignments form button:hover {
   background-color: #0056b3;
-}
-
-.course-section ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.course-section ul li {
-  margin-bottom: 10px;
-}
-
-.course-section ul li a {
-  color: #007bff;
-  text-decoration: none;
-}
-
-.course-section ul li a:hover {
-  text-decoration: underline;
 }

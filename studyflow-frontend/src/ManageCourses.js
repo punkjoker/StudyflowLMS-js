@@ -5,7 +5,7 @@ import { UserContext } from './UserContext';
 import './ManageCourses.css';
 
 const ManageCourses = () => {
-  const { userId } = useContext(UserContext);
+  const { userId } = useContext(UserContext); // Retrieve userId from UserContext
   const [courses, setCourses] = useState([]);
   const [newCourse, setNewCourse] = useState({ title: '', description: '' });
 
@@ -31,8 +31,8 @@ const ManageCourses = () => {
     e.preventDefault();
     try {
       await axios.post('http://localhost:5000/api/courses', { ...newCourse, instructor_id: userId }, { withCredentials: true });
-      fetchCourses();
-      setNewCourse({ title: '', description: '' });
+      fetchCourses(); // Refresh the course list
+      setNewCourse({ title: '', description: '' }); // Clear form inputs
     } catch (error) {
       console.error('Error adding course:', error);
     }
@@ -43,9 +43,23 @@ const ManageCourses = () => {
       <h2>Manage Courses</h2>
       <form onSubmit={handleCourseSubmit}>
         <label htmlFor="title">Course Title:</label>
-        <input type="text" id="title" name="title" value={newCourse.title} onChange={handleCourseChange} required />
+        <input
+          type="text"
+          id="title"
+          name="title"
+          value={newCourse.title}
+          onChange={handleCourseChange}
+          required
+        />
         <label htmlFor="description">Course Description:</label>
-        <input type="text" id="description" name="description" value={newCourse.description} onChange={handleCourseChange} required />
+        <input
+          type="text"
+          id="description"
+          name="description"
+          value={newCourse.description}
+          onChange={handleCourseChange}
+          required
+        />
         <button type="submit">Add Course</button>
       </form>
 
@@ -53,7 +67,9 @@ const ManageCourses = () => {
       <ul>
         {courses.map(course => (
           <li key={course.id}>
-            <Link to={`/courses/${course.id}`}>{course.title} - {course.description}</Link>
+            <Link to={`/courses/${course.id}`}>
+              {course.title} - {course.description}
+            </Link>
           </li>
         ))}
       </ul>

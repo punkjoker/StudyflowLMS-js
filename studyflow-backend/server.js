@@ -45,6 +45,7 @@ db.connect(err => {
     console.log('Connected to the database');
   }
 });
+
 // Student Signup
 app.post('/api/auth/signup/student', (req, res) => {
   const { first_name, last_name, email, password } = req.body;
@@ -55,37 +56,6 @@ app.post('/api/auth/signup/student', (req, res) => {
       res.status(500).send('Error inserting student into the database');
     } else {
       res.status(200).send({ message: 'Student signed up successfully' });
-    }
-  });
-});
-
-// Fetch assignments for a student based on enrolled courses
-app.get('/api/student/assignments', (req, res) => {
-  const studentId = req.query.student_id;
-  if (!studentId) {
-    console.log('Student ID is missing');
-    return res.status(400).send('Student ID is required');
-  }
-
-  const query = `
-    SELECT assignments.id, assignments.title, assignments.description, assignments.due_date, courses.title AS course_title
-    FROM assignments
-    JOIN courses ON assignments.course_id = courses.id
-    JOIN enrollments ON courses.id = enrollments.course_id
-    WHERE enrollments.student_id = ?
-  `;
-
-  db.execute(query, [studentId], (err, results) => {
-    if (err) {
-      console.error('Error fetching assignments:', err); // Log the error details
-      res.status(500).send('Error fetching assignments');
-    } else {
-      if (results.length === 0) {
-        console.log('No assignments found for student ID:', studentId);
-      } else {
-        console.log('Assignments fetched:', results); // Log the fetched results
-      }
-      res.status(200).send(results);
     }
   });
 });
@@ -190,13 +160,19 @@ app.put('/api/auth/user/instructor', (req, res) => {
   });
 });
 
-// Add and Fetch Courses
+// Add a new course
 app.post('/api/courses', (req, res) => {
-  const { title, description, instructor_id, notes } = req.body;
-  const query = 'INSERT INTO courses (title, description, instructor_id, notes) VALUES (?, ?, ?, ?)';
+  const { title, description, instructor_id } = req.body;
 
-  db.execute(query, [title, description, instructor_id, notes], (err, result) => {
+  if (!title || !description || !instructor_id) {
+    return res.status(400).send('Missing required fields');
+  }
+
+  const query = 'INSERT INTO courses (title, description, instructor_id) VALUES (?, ?, ?)';
+
+  db.execute(query, [title, description, instructor_id], (err, result) => {
     if (err) {
+      console.error('Error inserting course into the database:', err);
       res.status(500).send('Error inserting course into the database');
     } else {
       res.status(200).send({ message: 'Course added successfully' });
@@ -204,11 +180,13 @@ app.post('/api/courses', (req, res) => {
   });
 });
 
+// Fetch all courses
 app.get('/api/courses', (req, res) => {
   const query = 'SELECT * FROM courses';
 
   db.execute(query, [], (err, results) => {
     if (err) {
+      console.error('Error fetching courses from the database:', err);
       res.status(500).send('Error fetching courses from the database');
     } else {
       res.status(200).send(results);
@@ -216,12 +194,19 @@ app.get('/api/courses', (req, res) => {
   });
 });
 
+// Fetch courses by instructor ID
 app.get('/api/instructor/courses', (req, res) => {
   const instructorId = req.query.instructor_id;
+
+  if (!instructorId) {
+    return res.status(400).send('Missing instructor_id query parameter');
+  }
+
   const query = 'SELECT * FROM courses WHERE instructor_id = ?';
 
   db.execute(query, [instructorId], (err, results) => {
     if (err) {
+      console.error('Error fetching courses by instructor:', err);
       res.status(500).send('Error fetching courses');
     } else {
       res.status(200).send(results);
@@ -229,12 +214,15 @@ app.get('/api/instructor/courses', (req, res) => {
   });
 });
 
+// Fetch a specific course by ID
 app.get('/api/courses/:courseId', (req, res) => {
   const courseId = req.params.courseId;
+
   const query = 'SELECT * FROM courses WHERE id = ?';
 
   db.execute(query, [courseId], (err, results) => {
     if (err) {
+      console.error('Error fetching course:', err);
       res.status(500).send('Error fetching course');
     } else if (results.length > 0) {
       res.status(200).send(results[0]);
@@ -268,7 +256,6 @@ app.get('/api/enrollments/:userId', (req, res) => {
   });
 });
 
-
 // File Upload
 app.post('/api/upload', upload.single('file'), (req, res) => {
   if (!req.file) {
@@ -277,13 +264,14 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
   res.status(200).send({ filePath: req.file.path });
 });
 
-// Fetch and Upload Assignments
+// Add Assignments
 app.post('/api/assignments', (req, res) => {
   const { title, description, due_date, course_id } = req.body;
   const query = 'INSERT INTO assignments (title, description, due_date, course_id) VALUES (?, ?, ?, ?)';
 
   db.execute(query, [title, description, due_date, course_id], (err, result) => {
     if (err) {
+      console.error('Error inserting assignment into the database:', err);
       res.status(500).send('Error inserting assignment into the database');
     } else {
       res.status(200).send({ message: 'Assignment added successfully' });
@@ -291,24 +279,131 @@ app.post('/api/assignments', (req, res) => {
   });
 });
 
-app.get('/api/instructor/assignments', (req, res) => {
-  const instructorId = req.query.instructor_id;
+// Fetch assignments for a student based on enrolled courses
+app.get('/api/student/assignments', (req, res) => {
+  const studentId = req.query.student_id;
+  
+  if (!studentId) {
+    console.log('Student ID is missing');
+    return res.status(400).send('Student ID is required');
+  }
+
   const query = `
-    SELECT assignments.id, assignments.title, assignments.description, assignments.due_date, courses.title AS course_title
+    SELECT 
+      assignments.id, 
+      assignments.title, 
+      assignments.description, 
+      assignments.due_date, 
+      courses.title AS course_title
     FROM assignments
     JOIN courses ON assignments.course_id = courses.id
-    WHERE courses.instructor_id = ?
+    JOIN enrollments ON courses.id = enrollments.course_id
+    WHERE enrollments.student_id = ?
   `;
 
-  db.execute(query, [instructorId], (err, results) => {
+  db.execute(query, [studentId], (err, results) => {
     if (err) {
-      res.status(500).send('Error fetching assignments');
+      console.error('Error fetching assignments:', err);
+      return res.status(500).send('Error fetching assignments');
+    }
+    
+    if (results.length === 0) {
+      console.log('No assignments found for student ID:', studentId);
     } else {
-      res.status(200).send(results);
+      console.log('Assignments fetched:', results);
+    }
+    
+    res.status(200).json(results); // Send response as JSON
+  });
+});
+
+// View course details
+app.get('/api/course-details/:courseId', (req, res) => {
+  const courseId = req.params.courseId;
+
+  const query = `
+    SELECT courses.id, courses.title, courses.description,
+           notes.id AS note_id, notes.title AS note_title, notes.content
+    FROM courses
+    LEFT JOIN notes ON courses.id = notes.course_id
+    WHERE courses.id = ?
+  `;
+
+  db.query(query, [courseId], (err, results) => {
+    if (err) {
+      console.error('Error fetching course details:', err);
+      res.status(500).json({ error: 'An error occurred while fetching course details.' });
+    } else {
+      const courseDetails = {
+        title: results[0].title,
+        description: results[0].description,
+        notes: results.map(row => ({
+          id: row.note_id,
+          title: row.note_title,
+          content: row.content
+        })).filter(note => note.id) // Filter out rows without notes
+      };
+      res.json(courseDetails);
     }
   });
 });
 
+// Add a new note for a course
+app.post('/api/courses/:courseId/notes', (req, res) => {
+  const { courseId } = req.params;
+  const { title, content } = req.body;
+
+  const createdAt = new Date();
+  const updatedAt = new Date();
+  const query = 'INSERT INTO notes (course_id, title, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?)';
+
+  db.execute(query, [courseId, title, content, createdAt, updatedAt], (err, result) => {
+    if (err) {
+      console.error('Error adding note:', err);
+      res.status(500).send('Error adding note');
+    } else {
+      res.status(201).send({ message: 'Note added successfully', noteId: result.insertId });
+    }
+  });
+});
+
+// Route to handle course enrollment
+app.post('/api/enroll', (req, res) => {
+  const { studentId, courseId } = req.body;
+
+  if (!studentId || !courseId) {
+    return res.status(400).send('Student ID and Course ID are required');
+  }
+
+  // Validate IDs if needed (e.g., ensure they are numbers)
+  if (isNaN(studentId) || isNaN(courseId)) {
+    return res.status(400).send('Invalid Student ID or Course ID');
+  }
+
+  // Check if the student is already enrolled in the course
+  const checkQuery = 'SELECT * FROM enrollments WHERE student_id = ? AND course_id = ?';
+  db.execute(checkQuery, [studentId, courseId], (err, results) => {
+    if (err) {
+      console.error('Error checking enrollment:', err);
+      return res.status(500).send('Error checking enrollment');
+    }
+
+    if (results.length > 0) {
+      return res.status(400).send('Student is already enrolled in this course');
+    }
+
+    // Insert new enrollment record
+    const insertQuery = 'INSERT INTO enrollments (student_id, course_id) VALUES (?, ?)';
+    db.execute(insertQuery, [studentId, courseId], (err, result) => {
+      if (err) {
+        console.error('Error enrolling in course:', err);
+        return res.status(500).send('Error enrolling in course');
+      }
+
+      res.status(200).send({ message: 'Successfully enrolled in course' });
+    });
+  });
+});
 
 // Start server
 app.listen(port, () => {

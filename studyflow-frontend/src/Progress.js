@@ -18,8 +18,16 @@ const Progress = () => {
     try {
       console.log(`Fetching enrolled courses for user ID: ${userId}`);
       const response = await axios.get(`http://localhost:5000/api/enrollments/${userId}`, { withCredentials: true });
-      console.log('Fetched enrolled courses:', response.data); // Log the fetched data
-      setEnrolledCourses(response.data);
+      
+      const courseDetails = await Promise.all(
+        response.data.map(async enrollment => {
+          const courseResponse = await axios.get(`http://localhost:5000/api/courses/${enrollment.course_id}`, { withCredentials: true });
+          return { ...enrollment, ...courseResponse.data };
+        })
+      );
+
+      console.log('Fetched course details:', courseDetails);
+      setEnrolledCourses(courseDetails);
     } catch (error) {
       console.error('Error fetching enrolled courses:', error.message, error.response ? error.response.data : '');
     }
@@ -34,7 +42,7 @@ const Progress = () => {
             <div className="course-details">
               <span><strong>{course.title}</strong></span>
               <p>{course.description}</p>
-              <Link to={`/progress/${course.course_id}`} className="view-details-button">View Details</Link>
+              <Link to={`/viewcoursedetails/${course.course_id}`} className="view-details-button">View Details</Link>
             </div>
           </li>
         ))}

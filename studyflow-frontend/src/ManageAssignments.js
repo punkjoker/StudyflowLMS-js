@@ -1,70 +1,78 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { UserContext } from './UserContext';
 import './ManageAssignments.css';
 
-const ManageAssignments = () => {
-  const { user } = useContext(UserContext);
+const ManageAssignments = ({ instructorId }) => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [dueDate, setDueDate] = useState('');
   const [courses, setCourses] = useState([]);
-  const [newAssignment, setNewAssignment] = useState({ courseId: '', title: '', description: '', dueDate: '' });
-  const [message, setMessage] = useState('');
+  const [selectedCourseId, setSelectedCourseId] = useState('');
 
   useEffect(() => {
-    if (user && user.id) {
-      fetchCourses();
-    }
-  }, [user]);
+    fetchCourses();
+  }, [instructorId]);
 
   const fetchCourses = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/instructor/courses?instructor_id=${user.id}`, { withCredentials: true });
+      const response = await axios.get(`http://localhost:5000/api/instructor/courses?instructor_id=${instructorId}`);
       setCourses(response.data);
+      if (response.data.length > 0) {
+        setSelectedCourseId(response.data[0].id); // Set the first course as the default selected course
+      }
     } catch (error) {
       console.error('Error fetching courses:', error);
     }
   };
 
-  const handleAssignmentChange = (e) => {
-    const { name, value } = e.target;
-    setNewAssignment({ ...newAssignment, [name]: value });
-  };
-
-  const handleAssignmentSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user || !user.id) {
-      setMessage('User not logged in or user ID not available');
-      return;
-    }
+    const newAssignment = { title, description, due_date: dueDate, course_id: selectedCourseId };
+
     try {
-      await axios.post('http://localhost:5000/api/instructor/assignments', newAssignment, { withCredentials: true });
-      setNewAssignment({ courseId: '', title: '', description: '', dueDate: '' });
-      setMessage('Assignment added successfully');
+      const response = await axios.post('http://localhost:5000/api/assignments', newAssignment);
+      alert(response.data.message);
+      setTitle('');
+      setDescription('');
+      setDueDate('');
     } catch (error) {
-      console.error('Error adding assignment:', error.response ? error.response.data : error.message);
-      setMessage(`Error adding assignment: ${error.response ? error.response.data : error.message}`);
+      console.error('Error adding assignment:', error);
+      alert('Failed to add assignment');
     }
   };
 
   return (
     <div className="manage-assignments">
-      <h3>Manage Assignments</h3>
-      <form onSubmit={handleAssignmentSubmit}>
-        <label htmlFor="courseId">Course:</label>
-        <select id="courseId" name="courseId" value={newAssignment.courseId} onChange={handleAssignmentChange} required>
-          <option value="">Select Course</option>
-          {courses.map(course => (
-            <option key={course._id} value={course._id}>{course.title}</option>
-          ))}
-        </select>
-        <label htmlFor="title">Assignment Title:</label>
-        <input type="text" id="title" name="title" value={newAssignment.title} onChange={handleAssignmentChange} required />
-        <label htmlFor="description">Assignment Description:</label>
-        <input type="text" id="description" name="description" value={newAssignment.description} onChange={handleAssignmentChange} required />
-        <label htmlFor="dueDate">Due Date:</label>
-        <input type="date" id="dueDate" name="dueDate" value={newAssignment.dueDate} onChange={handleAssignmentChange} required />
+      <h2>Manage Assignments</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Course</label>
+          <select
+            value={selectedCourseId}
+            onChange={(e) => setSelectedCourseId(e.target.value)}
+            required
+          >
+            {courses.map(course => (
+              <option key={course.id} value={course.id}>
+                {course.title}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>Title</label>
+          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
+        </div>
+        <div>
+          <label>Description</label>
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} required />
+        </div>
+        <div>
+          <label>Due Date</label>
+          <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required />
+        </div>
         <button type="submit">Add Assignment</button>
       </form>
-      {message && <div className="message">{message}</div>}
     </div>
   );
 };

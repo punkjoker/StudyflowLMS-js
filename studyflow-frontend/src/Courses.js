@@ -1,30 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import { UserContext } from './UserContext'; // Assuming you have UserContext to get the current user
 import './Courses.css';
 
 const Courses = () => {
+  const { userId } = useContext(UserContext); // Get userId from context
   const [courses, setCourses] = useState([]);
   const [enrollStatus, setEnrollStatus] = useState('');
-  const [studentId, setStudentId] = useState(1); // Replace this with the actual student ID, e.g., from the logged-in user state
+  const [loading, setLoading] = useState(false); // Loading state
 
   useEffect(() => {
     fetchCourses();
   }, []);
 
   const fetchCourses = async () => {
+    setLoading(true);
     try {
       const response = await axios.get('http://localhost:5000/api/courses', { withCredentials: true });
       setCourses(response.data);
     } catch (error) {
       console.error('Error fetching courses:', error);
+      setEnrollStatus('Failed to load courses.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleEnroll = async (courseId) => {
+    setLoading(true);
     try {
       await axios.post(
         'http://localhost:5000/api/enroll',
-        { studentId, courseId },
+        { studentId: userId, courseId }, // Use dynamic userId
         { withCredentials: true }
       );
       setEnrollStatus('Successfully enrolled!');
@@ -32,12 +39,15 @@ const Courses = () => {
     } catch (error) {
       console.error('Error enrolling in course:', error);
       setEnrollStatus('Failed to enroll in course.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="courses">
       <h2>Available Courses</h2>
+      {loading && <div className="status-message">Loading...</div>}
       {enrollStatus && <div className="status-message">{enrollStatus}</div>}
       <ul>
         {courses.map(course => (

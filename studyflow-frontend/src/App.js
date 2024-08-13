@@ -21,6 +21,7 @@ import ManageAssignments from './ManageAssignments';
 import AssignmentFeedback from './AssignmentFeedback';
 import CourseDetails from './CourseDetails'; // Import CourseDetails
 import CourseProgress from './CourseProgress'; // Import CourseProgress
+import ViewCourseDetails from './ViewCourseDetails'; // Import ViewCourseDetails
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
             <Route path="/manage-courses" element={<ManageCourses />} />
             <Route path="/manage-assignments" element={<ManageAssignments />} />
             <Route path="/assignment-feedback" element={<AssignmentFeedback />} />
+            <Route path="/viewcoursedetails/:courseId" element={<ViewCourseDetails />} /> {/* Route for ViewCourseDetails */}
           </Routes>
           <footer>
             <p>&copy; 2024 StudyFlow LMS. All rights reserved.</p>
