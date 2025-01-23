@@ -35,14 +35,15 @@ const Progress = () => {
 
   return (
     <div className="progress">
-      <h2>Enrolled Courses</h2>
+      <h2>MY LEARNING</h2>
+      <h2>In-progress</h2>
       <ul>
         {enrolledCourses.map(course => (
           <li key={course.id}>
             <div className="course-details">
               <span><strong>{course.title}</strong></span>
               <p>{course.description}</p>
-              <Link to={`/viewcoursedetails/${course.course_id}`} className="view-details-button">View Details</Link>
+              <Link to={`/viewcoursedetails/${course.course_id}`} className="view-details-button">Resume learning</Link>
             </div>
           </li>
         ))}

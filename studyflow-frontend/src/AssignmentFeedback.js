@@ -5,22 +5,23 @@ import './AssignmentFeedback.css';
 
 const AssignmentFeedback = () => {
   const { user } = useContext(UserContext);
-  const [assignments, setAssignments] = useState([]);
+  const [submissions, setSubmissions] = useState([]);
   const [feedback, setFeedback] = useState({ assignmentId: '', comments: '' });
   const [message, setMessage] = useState('');
 
   useEffect(() => {
     if (user && user.id) {
-      fetchAssignments();
+      fetchSubmissions();
     }
   }, [user]);
 
-  const fetchAssignments = async () => {
+  // Fetch submissions for the instructor
+  const fetchSubmissions = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/instructor/assignments?instructor_id=${user.id}`, { withCredentials: true });
-      setAssignments(response.data);
+      const response = await axios.get(`http://localhost:5000/api/instructor/submissions?instructor_id=${user.id}`, { withCredentials: true });
+      setSubmissions(response.data);
     } catch (error) {
-      console.error('Error fetching assignments:', error);
+      console.error('Error fetching submissions:', error);
     }
   };
 
@@ -45,21 +46,34 @@ const AssignmentFeedback = () => {
     }
   };
 
+  const handleViewSubmissionDetails = (submissionId) => {
+    // Handle the action to view detailed submission, e.g., redirect or show a modal with details
+    console.log('View details for submission ID:', submissionId);
+  };
+
   return (
     <div className="assignment-feedback">
       <h3>Assignment Feedback</h3>
-      <form onSubmit={handleFeedbackSubmit}>
-        <label htmlFor="assignmentId">Assignment:</label>
-        <select id="assignmentId" name="assignmentId" value={feedback.assignmentId} onChange={handleFeedbackChange} required>
-          <option value="">Select Assignment</option>
-          {assignments.map(assignment => (
-            <option key={assignment.id} value={assignment.id}>{assignment.title}</option>
-          ))}
-        </select>
-        <label htmlFor="comments">Comments:</label>
-        <textarea id="comments" name="comments" value={feedback.comments} onChange={handleFeedbackChange} required />
-        <button type="submit">Submit Feedback</button>
-      </form>
+      
+      {/* List of submissions */}
+      <div className="submissions-list">
+        <h4>Submissions</h4>
+        {submissions.length === 0 ? (
+          <p>No submissions available.</p>
+        ) : (
+          submissions.map((submission) => (
+            <div key={submission.id} className="submission-item">
+              <p><strong>Student:</strong> {submission.student_name}</p>
+              <p><strong>Assignment:</strong> {submission.assignment_title}</p>
+              <p><strong>Submission Date:</strong> {new Date(submission.submission_date).toLocaleString()}</p>
+              <button onClick={() => handleViewSubmissionDetails(submission.id)}>
+                View Submission Details
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+
       {message && <div className="message">{message}</div>}
     </div>
   );

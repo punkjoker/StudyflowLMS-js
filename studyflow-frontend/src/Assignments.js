@@ -1,58 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Assignments.css';
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
+import { UserContext } from './UserContext';
+import './Progress.css';
 
-const Assignments = ({ studentId }) => {
-  const [assignments, setAssignments] = useState([]);
-  const navigate = useNavigate();
+const Progress = () => {
+  const { userId } = useContext(UserContext);
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
 
   useEffect(() => {
-    if (studentId) {
-      console.log(`Fetching assignments for student ID: ${studentId}`);
-      fetch(`http://localhost:5000/api/student/assignments?student_id=${studentId}`)
-        .then(response => {
-          console.log('Network response:', response); // Log the response
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          console.log('Assignments data:', data); // Log the fetched data
-          if (data.length === 0) {
-            console.log('No assignments found');
-          }
-          setAssignments(data);
-        })
-        .catch(error => console.error('Error fetching assignments:', error));
+    if (userId) {
+      fetchEnrolledCourses();
     }
-  }, [studentId]);
+  }, [userId]);
 
-  const handleAssignmentClick = (assignmentId) => {
-    navigate(`/assignment-details/${assignmentId}`);
+  const fetchEnrolledCourses = async () => {
+    try {
+      console.log(`Fetching enrolled courses for user ID: ${userId}`);
+      const response = await axios.get(`http://localhost:5000/api/enrollments/${userId}`, { withCredentials: true });
+      
+      const courseDetails = await Promise.all(
+        response.data.map(async enrollment => {
+          const courseResponse = await axios.get(`http://localhost:5000/api/courses/${enrollment.course_id}`, { withCredentials: true });
+          return { ...enrollment, ...courseResponse.data };
+        })
+      );
+
+      console.log('Fetched course details:', courseDetails);
+      setEnrolledCourses(courseDetails);
+    } catch (error) {
+      console.error('Error fetching enrolled courses:', error.message, error.response ? error.response.data : '');
+    }
   };
 
   return (
-    <div className="assignments-container">
-      <h2>Your Assignments</h2>
-      {assignments.length > 0 ? (
-        assignments.map((assignment, index) => (
-          <div
-            key={`${assignment.id}-${index}`}
-            className="assignment-card"
-            onClick={() => handleAssignmentClick(assignment.id)}
-          >
-            <h3>{assignment.title}</h3>
-            <p><strong>Course:</strong> {assignment.course_title}</p>
-            <p>{assignment.description}</p>
-            <p><strong>Due Date:</strong> {new Date(assignment.due_date).toLocaleDateString()}</p>
-          </div>
-        ))
-      ) : (
-        <p>No assignments found</p>
-      )}
+    <div className="progress">
+      <h2>Enrolled Courses</h2>
+      <ul>
+        {enrolledCourses.map(course => (
+          <li key={course.id}>
+            <div className="course-details">
+              <span><strong>{course.title}</strong></span>
+              <p>{course.description}</p>
+              <Link to={`/viewassignmentdetails/${course.course_id}`} className="view-details-button">View Assigment Details</Link>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
-export default Assignments;
+export default Progress;

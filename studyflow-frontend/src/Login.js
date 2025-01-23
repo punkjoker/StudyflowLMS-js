@@ -27,6 +27,7 @@ function Login() {
         const { id, role } = response.data;
         setUserRole(role);
         setUserId(id); // Save the user ID in context
+        localStorage.setItem('student_id', id); // Save user ID to localStorage
         if (role === 'student') {
           navigate('/student');
         } else if (role === 'instructor') {

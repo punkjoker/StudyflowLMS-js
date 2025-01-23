@@ -4,15 +4,19 @@
   align-items: center;
   margin: 2rem auto;
   padding: 2rem;
-  width: 80%;
+  width: 90%;
   max-width: 800px;
-  background-color: #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  background-color: #f9f9f9; /* Softer background for better readability */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Slightly deeper shadow for modern look */
+  border-radius: 10px; /* Rounded corners */
+  font-family: 'Arial', sans-serif; /* Clean font */
 }
 
 .manage-assignments h2 {
   margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  color: #333;
+  text-align: center; /* Center-align the heading */
 }
 
 .manage-assignments form {
@@ -20,22 +24,51 @@
 }
 
 .manage-assignments form div {
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem; /* Slightly larger margin for better spacing */
 }
 
 .manage-assignments form label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: bold;
+  font-weight: 600; /* Slightly bold font for labels */
+  color: #555;
 }
 
 .manage-assignments form input,
 .manage-assignments form textarea,
 .manage-assignments form select {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.75rem; /* Increased padding for better usability */
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px; /* Slightly rounded input edges */
+  font-size: 1rem;
+  color: #333; /* Ensure text color is visible */
+  background-color: #fff; /* Consistent input background */
+  transition: border-color 0.3s ease-in-out, box-shadow 0.3s; /* Smooth transition for focus */
+}
+
+.manage-assignments form input:focus,
+.manage-assignments form textarea:focus,
+.manage-assignments form select:focus {
+  border-color: #007bff; /* Highlight input on focus */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Subtle focus shadow */
+  outline: none;
+}
+
+.manage-assignments form select {
+  appearance: none; /* Remove default browser styling for dropdown */
+  background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"%3E%3Cpath fill="%23007bff" d="M7 10l5 5 5-5H7z"/%3E%3C/svg%3E');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  cursor: pointer;
+  color: #333; /* Ensure the text color is set properly */
+  background-color: #fff; /* Ensure the background color is white */
+}
+
+.manage-assignments form select option {
+  color: #333; /* Ensure options text color is visible */
+  background-color: #fff; /* Ensure option background color is white */
 }
 
 .manage-assignments form button {
@@ -44,10 +77,40 @@
   background-color: #007bff;
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px; /* Match the input border radius */
   cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color 0.3s ease-in-out, transform 0.2s; /* Smooth hover effect */
 }
 
 .manage-assignments form button:hover {
-  background-color: #0056b3;
+  background-color: #0056b3; /* Darker blue on hover */
+  transform: translateY(-2px); /* Slight lift on hover */
+}
+
+.manage-assignments form button:active {
+  background-color: #003f8a; /* Even darker blue for active state */
+  transform: translateY(0); /* Reset lift on click */
+}
+
+.manage-assignments form textarea {
+  resize: vertical; /* Allow resizing only vertically */
+  min-height: 100px; /* Minimum height for text area */
+}
+
+@media (max-width: 600px) {
+  .manage-assignments {
+    padding: 1.5rem;
+    width: 95%; /* Take up more width on smaller screens */
+  }
+
+  .manage-assignments h2 {
+    font-size: 1.5rem; /* Smaller heading size for mobile */
+  }
+
+  .manage-assignments form button {
+    width: 100%; /* Full-width button for better usability */
+    font-size: 0.9rem;
+  }
 }

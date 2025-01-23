@@ -1,0 +1,76 @@
+.assignment-details-container {
+  margin: 20px auto;
+  max-width: 800px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.assignment-details-container h2 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.assignment-details-container p {
+  font-size: 16px;
+  color: #555;
+}
+
+.assignment-details-container h3 {
+  margin-top: 20px;
+  font-size: 20px;
+  color: #444;
+}
+
+.assignment-item {
+  margin-bottom: 15px;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.assignment-item h4 {
+  font-size: 18px;
+  color: #333;
+}
+
+.assignment-item p {
+  font-size: 14px;
+  color: #666;
+}
+
+.submission-area {
+  margin-top: 15px;
+}
+
+.submission-area textarea {
+  width: 100%;
+  height: 120px;
+  font-size: 16px;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.submission-area input[type="file"] {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.submission-area button {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #fff;
+  background-color: #007BFF;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submission-area button:hover {
+  background-color: #0056b3;
+}

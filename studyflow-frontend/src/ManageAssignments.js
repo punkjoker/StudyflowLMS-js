@@ -3,35 +3,38 @@ import axios from 'axios';
 import './ManageAssignments.css';
 
 const ManageAssignments = ({ instructorId }) => {
+  const [courses, setCourses] = useState([]); // State to hold the list of courses
+  const [courseId, setCourseId] = useState(''); // Hold the selected course ID
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
-  const [courses, setCourses] = useState([]);
-  const [selectedCourseId, setSelectedCourseId] = useState('');
 
+  // Fetch courses when the component loads
   useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/courses?instructorId=${instructorId}`);
+        setCourses(response.data); // Assuming the API filters by instructorId and returns relevant courses
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+      }
+    };
+
     fetchCourses();
   }, [instructorId]);
 
-  const fetchCourses = async () => {
-    try {
-      const response = await axios.get(`http://localhost:5000/api/instructor/courses?instructor_id=${instructorId}`);
-      setCourses(response.data);
-      if (response.data.length > 0) {
-        setSelectedCourseId(response.data[0].id); // Set the first course as the default selected course
-      }
-    } catch (error) {
-      console.error('Error fetching courses:', error);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newAssignment = { title, description, due_date: dueDate, course_id: selectedCourseId };
+
+    // Create a new assignment object
+    const newAssignment = { course_id: courseId, title, description, due_date: dueDate };
 
     try {
       const response = await axios.post('http://localhost:5000/api/assignments', newAssignment);
       alert(response.data.message);
+
+      // Reset the form
+      setCourseId('');
       setTitle('');
       setDescription('');
       setDueDate('');
@@ -46,30 +49,45 @@ const ManageAssignments = ({ instructorId }) => {
       <h2>Manage Assignments</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Course</label>
+          <label>Course Name</label>
           <select
-            value={selectedCourseId}
-            onChange={(e) => setSelectedCourseId(e.target.value)}
+            value={courseId}
+            onChange={(e) => setCourseId(e.target.value)}
             required
           >
-            {courses.map(course => (
+            <option value="">Select a Course</option>
+            {courses.map((course) => (
               <option key={course.id} value={course.id}>
-                {course.title}
+                {course.title} {/* Use 'title' to display course names */}
               </option>
             ))}
           </select>
         </div>
         <div>
           <label>Title</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
         </div>
         <div>
           <label>Description</label>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} required />
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+          />
         </div>
         <div>
           <label>Due Date</label>
-          <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required />
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            required
+          />
         </div>
         <button type="submit">Add Assignment</button>
       </form>
