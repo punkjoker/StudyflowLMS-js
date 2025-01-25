@@ -1,0 +1,124 @@
+/* Signup.css */
+
+/* General styles for the container */
+.login-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f5f5f5; /* Light background for readability */
+  font-family: 'Arial', sans-serif;
+}
+
+/* Left section styles */
+.login-left {
+  flex: 1;
+  padding: 20px;
+  background: linear-gradient(135deg, #007bff, #00c6ff);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.login-left img {
+  max-width: 250px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+
+.login-left h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.login-left p {
+  font-size: 1rem;
+  line-height: 1.5;
+  max-width: 300px;
+}
+
+/* Right section styles */
+.login-right {
+  flex: 1;
+  padding: 40px;
+  max-width: 500px;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.login-right h2 {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.login-right p {
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Form styles */
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+form label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+form input,
+form select {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+form input:focus,
+form select:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Button styles */
+.login-button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #0056b3;
+}
+
+/* Additional links */
+.additional-links {
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.additional-links a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.additional-links a:hover {
+  text-decoration: underline;
+}

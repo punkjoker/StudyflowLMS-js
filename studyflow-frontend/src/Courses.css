@@ -1,64 +1,82 @@
 .courses {
   padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
 }
 
-.courses h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: #333;
+.course-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
-.courses ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.courses li {
-  background: #f9f9f9;
+.course-card {
+  position: relative;
+  width: 300px;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.course-label {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #4caf50;
+  color: #fff;
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 5px;
+  z-index: 1;
+}
+
+.course-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.course-details {
   padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s, box-shadow 0.3s;
+  text-align: center;
 }
 
-.courses li:hover {
-  background-color: #f0f0f0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.courses h3 {
-  margin: 0;
-  font-size: 20px;
-  color: #444;
-}
-
-.courses p {
-  font-size: 16px;
-  color: #666;
+.course-details h3 {
+  font-size: 18px;
   margin: 10px 0;
 }
 
-.courses button {
-  background-color: #007bff;
-  color: white;
+.course-details p {
+  font-size: 14px;
+  color: #666;
+}
+
+.course-meta {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+}
+
+.course-time {
+  font-size: 14px;
+  color: #555;
+}
+
+.course-free {
+  font-size: 14px;
+  color: #4caf50;
+  font-weight: bold;
+}
+
+button {
+  background-color: #4caf50;
+  color: #fff;
+  padding: 10px 20px;
   border: none;
   border-radius: 5px;
-  padding: 10px 15px;
   cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s;
 }
 
-.courses button:hover {
-  background-color: #0056b3;
-}
-
-.courses .status-message {
-  font-size: 18px;
-  color: #007bff;
-  margin-top: 20px;
+button:hover {
+  background-color: #45a049;
 }

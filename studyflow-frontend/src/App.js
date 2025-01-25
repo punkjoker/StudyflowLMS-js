@@ -24,6 +24,7 @@ import CourseProgress from './CourseProgress'; // Import CourseProgress
 import ViewCourseDetails from './ViewCourseDetails'; // Import ViewCourseDetails
 import ViewAssignmentDetails from './viewassignmentdetails';
 import ChatRoom from './chatroom'; // Import ChatRoom
+import ChatFeedback from './chatfeedback';
 
 
 function App() {
@@ -54,6 +55,7 @@ function App() {
             <Route path="/viewcoursedetails/:courseId" element={<ViewCourseDetails />} /> {/* Route for ViewCourseDetails */}
             <Route path="/viewassignmentdetails/:courseId" element={<ViewAssignmentDetails />} /> {/* Route for ViewAssignmentDetails */}
             <Route path="/chatroom" element={<ChatRoom />} /> {/* Route for Chatroom */}
+            <Route path="/chatfeedback" element={<ChatFeedback />} /> {/* Route for ChatFeedback */}
           </Routes>
           <footer>
             <p>&copy; 2024 StudyFlow LMS. All rights reserved.</p>

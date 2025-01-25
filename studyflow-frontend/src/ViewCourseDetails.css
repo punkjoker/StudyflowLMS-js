@@ -1,3 +1,4 @@
+/* General Course Details Styling */
 section.course-details {
   font-family: Arial, sans-serif;
   margin: 20px;
@@ -7,6 +8,7 @@ h2 {
   color: #333;
 }
 
+/* Notes Section Styling */
 .notes-container {
   display: flex;
   margin-top: 20px;
@@ -54,4 +56,39 @@ h2 {
 .notes-content p {
   font-size: 16px;
   color: #555;
+}
+
+/* Outline Section Styling */
+.outline-container {
+  margin-top: 20px;
+}
+
+.outline h3 {
+  font-size: 20px;
+  color: #333;
+  border-bottom: 2px solid #007BFF;
+  padding-bottom: 5px;
+}
+
+.outline ul {
+  list-style-type: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.outline li {
+  padding: 10px 5px;
+  font-size: 16px;
+  color: #555;
+  border-bottom: 1px solid #ddd;
+}
+
+.outline li:last-child {
+  border-bottom: none;
+}
+
+.outline li:hover {
+  background-color: #f9f9f9;
+  cursor: pointer;
+  color: #007BFF;
 }

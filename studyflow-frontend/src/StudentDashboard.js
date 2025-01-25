@@ -38,6 +38,13 @@ const StudentDashboard = () => {
           <p>View and edit your profile information.</p>
           <Link to="/profile" className="dashboard-link">View Profile</Link>
         </section>
+
+        {/* New Chat Feedback Section */}
+        <section className="dashboard-section">
+          <h3>Chat Feedback</h3>
+          <p>Interact with the chat assistant for support or feedback.</p>
+          <Link to="/chatfeedback" className="dashboard-link">Go to Chat Feedback</Link>
+        </section>
       </div>
     </div>
   );

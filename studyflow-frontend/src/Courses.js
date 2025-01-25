@@ -3,6 +3,9 @@ import axios from 'axios';
 import { UserContext } from './UserContext'; // Assuming you have UserContext to get the current user
 import './Courses.css';
 
+// Import a default image
+import defaultImage from './images/list.jpg'; // Adjust the path to match your project structure
+
 const Courses = () => {
   const { userId } = useContext(UserContext); // Get userId from context
   const [courses, setCourses] = useState([]);
@@ -38,7 +41,7 @@ const Courses = () => {
       fetchCourses(); // Refresh the course list
     } catch (error) {
       console.error('Error enrolling in course:', error);
-      setEnrollStatus('Failed to enroll in course.');
+      setEnrollStatus('Already enrolled in course.');
     } finally {
       setLoading(false);
     }
@@ -49,15 +52,27 @@ const Courses = () => {
       <h2>Available Courses</h2>
       {loading && <div className="status-message">Loading...</div>}
       {enrollStatus && <div className="status-message">{enrollStatus}</div>}
-      <ul>
+      <div className="course-list">
         {courses.map(course => (
-          <li key={course.id}>
-            <h3>{course.title}</h3>
-            <p>{course.description}</p>
-            <button onClick={() => handleEnroll(course.id)}>Enroll</button>
-          </li>
+          <div key={course.id} className="course-card">
+            <div className="course-label">Beginner</div>
+            <img
+              src={defaultImage} // Use imported default image
+              alt={course.title}
+              className="course-image"
+            />
+            <div className="course-details">
+              <h3>{course.title}</h3>
+              <p>{course.description}</p>
+              <div className="course-meta">
+                <span className="course-time">{course.duration || '40 Hours'}</span>
+                <span className="course-free">Free</span>
+              </div>
+              <button onClick={() => handleEnroll(course.id)}>Click To Enroll</button>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };

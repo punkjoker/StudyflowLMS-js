@@ -2,9 +2,11 @@ import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from './UserContext'; // Import UserContext
+import './Login.css'; // Import a separate CSS file for styling
+import learnImage from './images/learn.png'; // Import your image
 
 function Login() {
-  const { setUserRole, setUserId } = useContext(UserContext); // Use useContext to get setUserRole and setUserId
+  const { setUserRole, setUserId } = useContext(UserContext);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
@@ -26,8 +28,8 @@ function Login() {
       .then(response => {
         const { id, role } = response.data;
         setUserRole(role);
-        setUserId(id); // Save the user ID in context
-        localStorage.setItem('student_id', id); // Save user ID to localStorage
+        setUserId(id);
+        localStorage.setItem('student_id', id);
         if (role === 'student') {
           navigate('/student');
         } else if (role === 'instructor') {
@@ -36,49 +38,61 @@ function Login() {
       })
       .catch(error => {
         console.error('There was an error logging in!', error);
-        // Handle error (e.g., show error message)
       });
   };
 
   return (
-    <div className="login-section">
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="email">Email:</label><br />
-        <input 
-          type="text" 
-          id="email" 
-          name="email" 
-          value={formData.email} 
-          onChange={handleChange} 
-          required 
-        /><br /><br />
-
-        <label htmlFor="password">Password:</label><br />
-        <input 
-          type="password" 
-          id="password" 
-          name="password" 
-          value={formData.password} 
-          onChange={handleChange} 
-          required 
-        /><br /><br />
-
-        <label htmlFor="role">Role:</label><br />
-        <select 
-          id="role" 
-          name="role" 
-          value={formData.role} 
-          onChange={handleChange} 
-          required
-        >
-          <option value="student">Student</option>
-          <option value="instructor">Instructor</option>
-        </select><br /><br />
-
-        <button type="submit">Login</button>
-      </form>
-      <p>Don't have an account? <Link to="/signup">Sign up</Link></p>
+    <div className="login-container">
+      <div className="login-left">
+        <img src={learnImage} alt="Learn" className="login-image" />
+        <h2>Build Your Skills With StudyFlow</h2>
+        <p>Pursue real career paths through instructor-led courses taught by experts and free, online courses backed by StudyFlow's expertise.</p>
+      </div>
+      <div className="login-right">
+        <div className="login-header">
+          
+        </div>
+        <h2>Welcome!</h2>
+        <p>Please login to your account.</p>
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="email">Email</label>
+          <input 
+            type="text" 
+            id="email" 
+            name="email" 
+            value={formData.email} 
+            onChange={handleChange} 
+            placeholder="Enter your email"
+            required 
+          />
+          <label htmlFor="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            value={formData.password} 
+            onChange={handleChange} 
+            placeholder="Enter your password"
+            required 
+          />
+          <label htmlFor="role">Role</label>
+          <select 
+            id="role" 
+            name="role" 
+            value={formData.role} 
+            onChange={handleChange} 
+            required
+          >
+            <option value="student">Student</option>
+            <option value="instructor">Instructor</option>
+          </select>
+          <button type="submit" className="login-button">Login</button>
+        </form>
+        <p className="additional-links">
+          <Link to="/forgot-password">Forgot Password?</Link><br />
+          Don't have an account? <Link to="/signup">Sign up</Link>
+        </p>
+      </div>
     </div>
   );
 }
