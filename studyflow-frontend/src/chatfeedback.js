@@ -4,6 +4,7 @@ import './chatfeedback.css';
 const ChatFeedback = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);  // Track loading state
 
   // Add a greeting message when the chat opens
   useEffect(() => {
@@ -16,6 +17,8 @@ const ChatFeedback = () => {
 
     const userMessage = { sender: 'user', text: input };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
+
+    setLoading(true);  // Start loading when sending a request
 
     try {
       const response = await fetch('http://127.0.0.1:5000/chat', {
@@ -32,6 +35,7 @@ const ChatFeedback = () => {
       setMessages((prevMessages) => [...prevMessages, errorMessage]);
     }
 
+    setLoading(false);  // Stop loading once the response is received
     setInput('');
   };
 
@@ -44,6 +48,7 @@ const ChatFeedback = () => {
             {message.text}
           </div>
         ))}
+        {loading && <div className="loading-spinner">...</div>}  {/* Loading spinner */}
       </div>
       <div className="chat-input-container">
         <input
@@ -52,9 +57,10 @@ const ChatFeedback = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type your message here..."
+          disabled={loading}  // Disable input while loading
         />
-        <button className="send-button" onClick={handleSendMessage}>
-          Send
+        <button className="send-button" onClick={handleSendMessage} disabled={loading}>
+          {loading ? 'Sending...' : 'Send'}
         </button>
       </div>
     </div>

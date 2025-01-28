@@ -8,6 +8,86 @@ h2 {
   color: #333;
 }
 
+/* Assignment Details Styling */
+.assignment-item {
+  margin-bottom: 30px;
+}
+
+.assignment-item h4 {
+  font-size: 20px;
+  color: #333;
+}
+
+.assignment-item p {
+  font-size: 16px;
+  color: #555;
+}
+
+.submission-area textarea {
+  width: 100%;
+  height: 120px;
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.submission-area input[type="file"] {
+  margin-top: 10px;
+}
+
+.submission-area button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.submission-area button:hover {
+  background-color: #0056b3;
+}
+
+.submission-area button[type="button"] {
+  background-color: #f44336;
+}
+
+.submission-area button[type="button"]:hover {
+  background-color: #d32f2f;
+}
+
+/* Questions and Checkboxes Section */
+.questions-container {
+  margin-top: 30px;
+}
+
+.questions-container h3 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.questions-container ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.questions-container li {
+  margin-bottom: 10px;
+}
+
+.questions-container label {
+  font-size: 16px;
+  color: #555;
+}
+
+.questions-container input[type="checkbox"] {
+  margin-right: 10px;
+}
+
 /* Notes Section Styling */
 .notes-container {
   display: flex;

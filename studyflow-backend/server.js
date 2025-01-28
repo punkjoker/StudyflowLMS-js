@@ -290,15 +290,26 @@ app.post('/api/assignments', (req, res) => {
   });
 });
 
-// Fetch assignments for a student based on enrolled courses
+//get assigment details
 app.get('/api/assignment-details/:courseId', (req, res) => {
   const courseId = req.params.courseId;
 
   const query = `
-    SELECT courses.id AS course_id, courses.title AS course_title, courses.description AS course_description,
-           assignments.id AS assignment_id, assignments.title AS assignment_title, assignments.description AS assignment_description, assignments.due_date AS assignment_due_date
+    SELECT 
+      courses.id AS course_id, 
+      courses.title AS course_title, 
+      courses.description AS course_description,
+      assignments.id AS assignment_id, 
+      assignments.title AS assignment_title, 
+      assignments.description AS assignment_description, 
+      assignments.due_date AS assignment_due_date,
+      questions.question_id AS question_id,
+      questions.question_text AS question_text,
+      questions.options AS options,  -- Fetch the options JSON
+      questions.correct_answer AS correct_answer  -- Fetch the correct_answer
     FROM courses
     LEFT JOIN assignments ON courses.id = assignments.course_id
+    LEFT JOIN questions ON assignments.id = questions.assignment_id
     WHERE courses.id = ?
   `;
 
@@ -312,19 +323,43 @@ app.get('/api/assignment-details/:courseId', (req, res) => {
       return res.status(404).json({ message: 'No assignments found for the specified course.' });
     }
 
+    // Process the data into the required structure
     const assignmentDetails = {
       courseId: results[0].course_id,
       courseTitle: results[0].course_title,
       courseDescription: results[0].course_description,
-      assignments: results
-        .filter(row => row.assignment_id) // Ensure rows have valid assignment data
-        .map(row => ({
+      assignments: [],
+    };
+
+    // Map over the results to structure the assignments, questions, and options correctly
+    results.forEach(row => {
+      const assignment = assignmentDetails.assignments.find(a => a.id === row.assignment_id);
+
+      if (!assignment) {
+        assignmentDetails.assignments.push({
           id: row.assignment_id,
           title: row.assignment_title,
           description: row.assignment_description,
           due_date: row.assignment_due_date,
-        })),
-    };
+          questions: row.question_id ? [{
+            id: row.question_id,
+            text: row.question_text,
+            options: row.options ? JSON.parse(row.options) : [], // Parse the options JSON
+            correct_answer: row.correct_answer, // Add correct_answer
+          }] : [],
+        });
+      } else {
+        const question = assignment.questions.find(q => q.id === row.question_id);
+        if (!question && row.question_id) {
+          assignment.questions.push({
+            id: row.question_id,
+            text: row.question_text,
+            options: row.options ? JSON.parse(row.options) : [], // Parse the options JSON
+            correct_answer: row.correct_answer, // Add correct_answer
+          });
+        }
+      }
+    });
 
     res.json(assignmentDetails);
   });
@@ -422,62 +457,92 @@ app.post('/api/enroll', (req, res) => {
   });
 });
 
-// Submit an Assignment
-app.post('/api/submit-assignment', async (req, res) => {
-  const { assignment_id, student_id, text_response, file_url } = req.body;
+//submit answers
+app.post('/api/submit-answers', (req, res) => {
+  const { answers } = req.body;  // Array of answers from the frontend
+  const studentId = req.user.id;  // Assuming student ID is stored in the session or JWT
 
-  if (!assignment_id || !student_id) {
-    return res.status(400).send({ message: 'Missing required fields' });
-  }
-  if (typeof assignment_id !== 'number' || typeof student_id !== 'number') {
-    return res.status(400).send({ message: 'Invalid assignment_id or student_id' });
-  }
-  if (text_response && text_response.length > 10000) {
-    return res.status(400).send({ message: 'Text response too long' });
-  }
+  // Begin a transaction to ensure both the answers and grades are stored correctly
+  db.beginTransaction((err) => {
+    if (err) {
+      console.error('Transaction error:', err);
+      return res.status(500).json({ error: 'An error occurred during the transaction.' });
+    }
 
-  try {
-    const query = `
-      INSERT INTO submissions (assignment_id, student_id, text_response, file_url, status)
-      VALUES (?, ?, ?, ?, 'Not Submitted')
-    `;
-    const [result] = await db.execute(query, [
-      assignment_id,
-      student_id,
-      text_response || null,
-      file_url || null,
-    ]);
+    let correctAnswersCount = 0;
 
-    res.status(200).send({
-      message: 'Assignment submitted successfully',
-      submissionId: result.insertId,
+    // Iterate over the answers and insert them into the student_answers table
+    const insertAnswersPromises = answers.map(answer => {
+      return new Promise((resolve, reject) => {
+        // Fetch the correct answer for the question
+        const query = 'SELECT correct_answer FROM questions WHERE question_id = ?';
+        db.query(query, [answer.question_id], (err, result) => {
+          if (err) {
+            reject(err);
+          }
+
+          const isCorrect = result[0]?.correct_answer === answer.selected_answer;
+          if (isCorrect) {
+            correctAnswersCount++;
+          }
+
+          // Insert the student's answer into the student_answers table
+          const insertQuery = `
+            INSERT INTO student_answers (student_id, question_id, selected_answer, is_correct)
+            VALUES (?, ?, ?, ?)
+          `;
+          db.query(insertQuery, [studentId, answer.question_id, answer.selected_answer, isCorrect], (err) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve();
+            }
+          });
+        });
+      });
     });
-  } catch (err) {
-    console.error('Error submitting assignment:', err);
-    res.status(500).send({ message: 'Error submitting assignment' });
-  }
-});
 
-// Update status after submission
-app.post('/api/update-submission-status', async (req, res) => {
-  const { submission_id } = req.body;
+    // Wait for all the answers to be inserted
+    Promise.all(insertAnswersPromises)
+      .then(() => {
+        // Now, calculate the grade and insert it into the grades table
+        const totalQuestions = answers.length;
+        const gradePercentage = (correctAnswersCount / totalQuestions) * 100;
 
-  if (!submission_id) {
-    return res.status(400).send({ message: 'Missing submission_id' });
-  }
+        const insertGradeQuery = `
+          INSERT INTO grades (student_id, assignment_id, total_questions, correct_answers, grade_percentage)
+          VALUES (?, ?, ?, ?, ?)
+        `;
 
-  const query = `
-    UPDATE submissions 
-    SET status = 'Submitted' 
-    WHERE id = ?
-  `;
-  try {
-    await db.execute(query, [submission_id]);
-    res.status(200).send({ message: 'Submission status updated successfully' });
-  } catch (err) {
-    console.error('Error updating status:', err);
-    res.status(500).send({ message: 'Error updating submission status' });
-  }
+        db.query(insertGradeQuery, [studentId, answers[0]?.assignment_id, totalQuestions, correctAnswersCount, gradePercentage], (err) => {
+          if (err) {
+            db.rollback(() => {
+              console.error('Error inserting grade:', err);
+              return res.status(500).json({ error: 'An error occurred while inserting the grade.' });
+            });
+          }
+
+          // Commit the transaction
+          db.commit((err) => {
+            if (err) {
+              db.rollback(() => {
+                console.error('Error committing transaction:', err);
+                return res.status(500).json({ error: 'An error occurred during the transaction.' });
+              });
+            } else {
+              res.status(200).json({ message: 'Answers submitted and grade calculated successfully.' });
+            }
+          });
+        });
+      })
+      .catch((err) => {
+        // Rollback the transaction if any error occurs
+        db.rollback(() => {
+          console.error('Error inserting answers:', err);
+          res.status(500).json({ error: 'An error occurred while inserting answers.' });
+        });
+      });
+  });
 });
 
 // Route to add a chat message
@@ -534,6 +599,33 @@ app.get('/api/chatroom/:studentId/:instructorId', (req, res) => {
     res.status(200).json({ messages: results });
   });
 });
+
+// Endpoint to fetch grades for a specific student
+// Fetch grades for a specific student
+app.get('/api/grades/:userId', (req, res) => {
+  const userId = req.params.userId;
+  console.log(`Fetching grades for user ID: ${userId}`);
+
+  const query = `
+    SELECT 
+      g.grade_id, g.assignment_id, g.total_questions, 
+      g.correct_answers, g.grade_percentage, a.title AS assignment_title 
+    FROM grades g
+    JOIN assignments a ON g.assignment_id = a.id
+    WHERE g.student_id = ?;
+  `;
+
+  db.query(query, [userId], (err, results) => {
+    if (err) {
+      console.error('Error fetching grades:', err); // Log the error details
+      res.status(500).json({ error: 'An error occurred while fetching grades.' });
+    } else {
+      console.log('Fetched grades:', results); // Log the fetched results
+      res.json(results);
+    }
+  });
+});
+
 
 // Start server
 app.listen(port, () => {
