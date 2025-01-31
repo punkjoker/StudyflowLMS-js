@@ -1,82 +1,74 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
-import subprocess
-import re
+import requests
 import logging
+import json
 
 app = Flask(__name__)
 
-# Enable CORS for all routes
+# Enable CORS for frontend requests
 CORS(app, resources={r"/chat": {"origins": "http://localhost:3000"}})
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-# Enhanced function to clean terminal control characters
-def clean_output(output):
-    ansi_escape = re.compile(r'\x1b(?:[@-_]|[0-?]*[ -/]*[@-~])')
-    cursor_controls = re.compile(r'\?25[hl]|\x1b\[2K|\x1b\[1G')
-    spinner_symbols = re.compile(r'[⠋⠙⠸⠼⠴⠦⠧⠇⠏]')
-    output = ansi_escape.sub('', output)
-    output = cursor_controls.sub('', output)
-    output = spinner_symbols.sub('', output)
-    output = re.sub(r'\s+', ' ', output).strip()
-    return output
+OLLAMA_API_URL = "http://localhost:11434/api/generate"  # Ollama API endpoint
 
 @app.route("/chat", methods=["POST"])
 def chat():
     user_input = request.json.get("message", "").strip()
+
     if not user_input:
         return jsonify({"status": "error", "message": "Please provide a message."}), 400
 
-    try:
-        process = subprocess.Popen(
-            ["ollama", "run", "llama2"],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-        stdout, stderr = process.communicate(input=user_input + '\n', timeout=30)
+    def generate_response():
+        try:
+            response = requests.post(
+                OLLAMA_API_URL,
+                json={"model": "llama2", "prompt": user_input},
+                stream=True
+            )
 
-        if stderr.strip():
-            cleaned_error = clean_output(stderr.strip())
-            app.logger.error(f"Subprocess error: {cleaned_error}")
-            return jsonify({"status": "error", "message": f"Error occurred: {cleaned_error}"}), 500
+            if response.status_code != 200:
+                logging.error(f"Ollama API returned an error: {response.status_code} - {response.text}")
+                yield json.dumps({"status": "error", "message": "Ollama API returned an error."}) + "\n"
+                return
 
-        cleaned_response = clean_output(stdout.strip())
-        return jsonify({"status": "success", "data": {"response": cleaned_response}})
+            # Stream the response line by line
+            for chunk in response.iter_lines():
+                if chunk:
+                    try:
+                        chunk_data = chunk.decode("utf-8")
+                        response_data = json.loads(chunk_data)
+                        if "response" in response_data:
+                            yield json.dumps({"status": "stream", "data": response_data["response"]}) + "\n"
+                    except json.JSONDecodeError as e:
+                        logging.error(f"JSON decoding error in chunk: {e}")
+                        continue
+                    except Exception as e:
+                        logging.error(f"Unexpected error processing chunk: {e}")
+                        continue
 
-    except subprocess.TimeoutExpired:
-        process.kill()
-        return jsonify({"status": "error", "message": "The request timed out."}), 504
+            yield json.dumps({"status": "success", "message": "Response completed"}) + "\n"
 
-    except Exception as e:
-        app.logger.error(f"An unexpected error occurred: {str(e)}")
-        return jsonify({"status": "error", "message": f"An error occurred: {str(e)}"}), 500
+        except requests.RequestException as e:
+            logging.error(f"Ollama API request failed: {str(e)}")
+            yield json.dumps({"status": "error", "message": "Failed to communicate with Ollama API."}) + "\n"
+
+    return Response(generate_response(), content_type="application/json")
 
 @app.route("/health", methods=["GET"])
 def health():
     try:
-        process = subprocess.Popen(
-            ["ollama", "--version"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-        stdout, stderr = process.communicate(timeout=10)
-
-        if process.returncode == 0:
-            return jsonify({"status": "success", "message": "Server is running and Ollama is accessible."})
+        response = requests.get("http://localhost:11434/api/status")
+        if response.status_code == 200:
+            return jsonify({"status": "success", "message": "Ollama API is running."})
         else:
-            cleaned_error = clean_output(stderr.strip())
-            return jsonify({"status": "error", "message": f"Ollama check failed: {cleaned_error}"}), 500
-
-    except subprocess.TimeoutExpired:
-        return jsonify({"status": "error", "message": "Health check timed out."}), 504
-
-    except Exception as e:
-        return jsonify({"status": "error", "message": f"An error occurred during health check: {str(e)}"}), 500
+            logging.error(f"Ollama API health check failed: {response.status_code}")
+            return jsonify({"status": "error", "message": "Ollama API is not responding."}), 500
+    except requests.RequestException as e:
+        logging.error(f"Health check failed: {str(e)}")
+        return jsonify({"status": "error", "message": "Could not reach Ollama API."}), 500
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)

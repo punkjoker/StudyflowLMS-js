@@ -21,21 +21,25 @@ const ChatFeedback = () => {
     setLoading(true);  // Start loading when sending a request
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/chat', {
+      const response = await fetch('http://localhost:11434/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({
+          model: 'llama2',  // Change this to the Ollama model you are using
+          prompt: input,
+          stream: false, // Set to true if you want a real-time stream response
+        }),
       });
+
       const data = await response.json();
 
-      const botMessage = { sender: 'bot', text: data.response };  // Ensure 'response' is returned from the backend
+      const botMessage = { sender: 'bot', text: data.response || "No response from Ollama." };
       setMessages((prevMessages) => [...prevMessages, botMessage]);
     } catch (error) {
-      const errorMessage = { sender: 'bot', text: 'Something went wrong. Please try again later.' };
-      setMessages((prevMessages) => [...prevMessages, errorMessage]);
+      setMessages((prevMessages) => [...prevMessages, { sender: 'bot', text: 'Something went wrong. Try again.' }]);
     }
 
-    setLoading(false);  // Stop loading once the response is received
+    setLoading(false);
     setInput('');
   };
 

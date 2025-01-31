@@ -457,92 +457,77 @@ app.post('/api/enroll', (req, res) => {
   });
 });
 
-//submit answers
-app.post('/api/submit-answers', (req, res) => {
-  const { answers } = req.body;  // Array of answers from the frontend
-  const studentId = req.user.id;  // Assuming student ID is stored in the session or JWT
+//submit-answers
+app.post('/api/submit-answers', async (req, res) => {
+  console.log("📩 Incoming Submission Request:", req.body);
 
-  // Begin a transaction to ensure both the answers and grades are stored correctly
-  db.beginTransaction((err) => {
-    if (err) {
-      console.error('Transaction error:', err);
-      return res.status(500).json({ error: 'An error occurred during the transaction.' });
+  const { answers, assignmentId, userId } = req.body;
+  if (!answers || !Array.isArray(answers) || !assignmentId || !userId) {
+    return res.status(400).json({ error: "Invalid or missing data." });
+  }
+
+  try {
+    // ✅ Start a transaction
+    await db.promise().query("START TRANSACTION");
+
+    // ✅ Fetch correct answers
+    const [questionResults] = await db.promise().query(
+      `SELECT question_id, correct_answer FROM questions WHERE question_id IN (?)`, 
+      [answers.map(a => a.question_id)]
+    );
+
+    const correctAnswersMap = {};
+    questionResults.forEach(q => correctAnswersMap[q.question_id] = q.correct_answer);
+
+    // ✅ Insert student answers
+    let correctAnswersCount = 0;
+    for (let { question_id, selected_answer } of answers) {
+      const isCorrect = correctAnswersMap[question_id] === selected_answer;
+      if (isCorrect) correctAnswersCount++;
+
+      await db.promise().query(
+        `INSERT INTO student_answers (student_id, question_id, selected_answer, is_correct) 
+         VALUES (?, ?, ?, ?)`,
+        [userId, question_id, selected_answer, isCorrect]
+      );
     }
 
-    let correctAnswersCount = 0;
+    // ✅ Insert or update grade
+    const totalQuestions = answers.length;
+    const gradePercentage = (correctAnswersCount / totalQuestions) * 100;
+    const status = "Submitted";
 
-    // Iterate over the answers and insert them into the student_answers table
-    const insertAnswersPromises = answers.map(answer => {
-      return new Promise((resolve, reject) => {
-        // Fetch the correct answer for the question
-        const query = 'SELECT correct_answer FROM questions WHERE question_id = ?';
-        db.query(query, [answer.question_id], (err, result) => {
-          if (err) {
-            reject(err);
-          }
+    await db.promise().query(
+      `INSERT INTO grades (student_id, assignment_id, total_questions, correct_answers, grade_percentage, status)
+       VALUES (?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE total_questions = VALUES(total_questions), 
+                               correct_answers = VALUES(correct_answers),
+                               grade_percentage = VALUES(grade_percentage), 
+                               status = VALUES(status)`,
+      [userId, assignmentId, totalQuestions, correctAnswersCount, gradePercentage, status]
+    );
 
-          const isCorrect = result[0]?.correct_answer === answer.selected_answer;
-          if (isCorrect) {
-            correctAnswersCount++;
-          }
+    // ✅ Insert check-in log
+    await db.promise().query(
+      `INSERT INTO student_checkin_logs (student_id, assignment_id, action, timestamp)
+       VALUES (?, ?, ?, NOW())`,
+      [userId, assignmentId, "Submitted answers"]
+    );
 
-          // Insert the student's answer into the student_answers table
-          const insertQuery = `
-            INSERT INTO student_answers (student_id, question_id, selected_answer, is_correct)
-            VALUES (?, ?, ?, ?)
-          `;
-          db.query(insertQuery, [studentId, answer.question_id, answer.selected_answer, isCorrect], (err) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
-        });
-      });
+    // ✅ Commit transaction
+    await db.promise().query("COMMIT");
+
+    res.status(200).json({
+      message: "Answers submitted successfully.",
+      correctAnswersCount,
+      gradePercentage,
     });
 
-    // Wait for all the answers to be inserted
-    Promise.all(insertAnswersPromises)
-      .then(() => {
-        // Now, calculate the grade and insert it into the grades table
-        const totalQuestions = answers.length;
-        const gradePercentage = (correctAnswersCount / totalQuestions) * 100;
-
-        const insertGradeQuery = `
-          INSERT INTO grades (student_id, assignment_id, total_questions, correct_answers, grade_percentage)
-          VALUES (?, ?, ?, ?, ?)
-        `;
-
-        db.query(insertGradeQuery, [studentId, answers[0]?.assignment_id, totalQuestions, correctAnswersCount, gradePercentage], (err) => {
-          if (err) {
-            db.rollback(() => {
-              console.error('Error inserting grade:', err);
-              return res.status(500).json({ error: 'An error occurred while inserting the grade.' });
-            });
-          }
-
-          // Commit the transaction
-          db.commit((err) => {
-            if (err) {
-              db.rollback(() => {
-                console.error('Error committing transaction:', err);
-                return res.status(500).json({ error: 'An error occurred during the transaction.' });
-              });
-            } else {
-              res.status(200).json({ message: 'Answers submitted and grade calculated successfully.' });
-            }
-          });
-        });
-      })
-      .catch((err) => {
-        // Rollback the transaction if any error occurs
-        db.rollback(() => {
-          console.error('Error inserting answers:', err);
-          res.status(500).json({ error: 'An error occurred while inserting answers.' });
-        });
-      });
-  });
+  } catch (error) {
+    await db.promise().query("ROLLBACK");
+    console.error("❌ Error submitting answers:", error);
+    res.status(500).json({ error: "Submission failed." });
+  }
 });
 
 // Route to add a chat message
