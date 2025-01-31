@@ -290,9 +290,14 @@ app.post('/api/assignments', (req, res) => {
   });
 });
 
-//get assigment details
+//get aassignment details 
 app.get('/api/assignment-details/:courseId', (req, res) => {
-  const courseId = req.params.courseId;
+  const { courseId } = req.params;
+  const { userId } = req.query;  // Get userId from query params
+
+  if (!userId) {
+    return res.status(400).json({ error: "User ID is required" });
+  }
 
   const query = `
     SELECT 
@@ -305,17 +310,19 @@ app.get('/api/assignment-details/:courseId', (req, res) => {
       assignments.due_date AS assignment_due_date,
       questions.question_id AS question_id,
       questions.question_text AS question_text,
-      questions.options AS options,  -- Fetch the options JSON
-      questions.correct_answer AS correct_answer  -- Fetch the correct_answer
+      questions.options AS options,
+      questions.correct_answer AS correct_answer,
+      grades.status AS submission_status  -- ✅ Fetch submission status
     FROM courses
     LEFT JOIN assignments ON courses.id = assignments.course_id
     LEFT JOIN questions ON assignments.id = questions.assignment_id
+    LEFT JOIN grades ON assignments.id = grades.assignment_id AND grades.student_id = ?  -- ✅ Ensure status is fetched for the logged-in student
     WHERE courses.id = ?
   `;
 
-  db.query(query, [courseId], (err, results) => {
+  db.query(query, [userId, courseId], (err, results) => {
     if (err) {
-      console.error('Error fetching assignment details:', err);
+      console.error('❌ Error fetching assignment details:', err);
       return res.status(500).json({ error: 'An error occurred while fetching assignment details.' });
     }
 
@@ -323,7 +330,7 @@ app.get('/api/assignment-details/:courseId', (req, res) => {
       return res.status(404).json({ message: 'No assignments found for the specified course.' });
     }
 
-    // Process the data into the required structure
+    // ✅ Process the data into the required structure
     const assignmentDetails = {
       courseId: results[0].course_id,
       courseTitle: results[0].course_title,
@@ -331,31 +338,33 @@ app.get('/api/assignment-details/:courseId', (req, res) => {
       assignments: [],
     };
 
-    // Map over the results to structure the assignments, questions, and options correctly
+    // ✅ Map over the results to structure assignments, questions, and submission status correctly
     results.forEach(row => {
-      const assignment = assignmentDetails.assignments.find(a => a.id === row.assignment_id);
+      let assignment = assignmentDetails.assignments.find(a => a.id === row.assignment_id);
 
       if (!assignment) {
-        assignmentDetails.assignments.push({
+        assignment = {
           id: row.assignment_id,
           title: row.assignment_title,
           description: row.assignment_description,
           due_date: row.assignment_due_date,
+          submitted: row.submission_status === "Submitted",  // ✅ Add submission status
           questions: row.question_id ? [{
             id: row.question_id,
             text: row.question_text,
-            options: row.options ? JSON.parse(row.options) : [], // Parse the options JSON
-            correct_answer: row.correct_answer, // Add correct_answer
+            options: row.options ? JSON.parse(row.options) : [],
+            correct_answer: row.correct_answer,
           }] : [],
-        });
+        };
+        assignmentDetails.assignments.push(assignment);
       } else {
         const question = assignment.questions.find(q => q.id === row.question_id);
         if (!question && row.question_id) {
           assignment.questions.push({
             id: row.question_id,
             text: row.question_text,
-            options: row.options ? JSON.parse(row.options) : [], // Parse the options JSON
-            correct_answer: row.correct_answer, // Add correct_answer
+            options: row.options ? JSON.parse(row.options) : [],
+            correct_answer: row.correct_answer,
           });
         }
       }
@@ -466,11 +475,18 @@ app.post('/api/submit-answers', async (req, res) => {
     return res.status(400).json({ error: "Invalid or missing data." });
   }
 
+  const validChoices = ['A', 'B', 'C', 'D'];
+
+  // Validate that all answers are A, B, C, or D
+  for (let { selected_answer } of answers) {
+    if (!validChoices.includes(selected_answer)) {
+      return res.status(400).json({ error: "Invalid answer choice detected. Only A, B, C, or D are allowed." });
+    }
+  }
+
   try {
-    // ✅ Start a transaction
     await db.promise().query("START TRANSACTION");
 
-    // ✅ Fetch correct answers
     const [questionResults] = await db.promise().query(
       `SELECT question_id, correct_answer FROM questions WHERE question_id IN (?)`, 
       [answers.map(a => a.question_id)]
@@ -479,7 +495,6 @@ app.post('/api/submit-answers', async (req, res) => {
     const correctAnswersMap = {};
     questionResults.forEach(q => correctAnswersMap[q.question_id] = q.correct_answer);
 
-    // ✅ Insert student answers
     let correctAnswersCount = 0;
     for (let { question_id, selected_answer } of answers) {
       const isCorrect = correctAnswersMap[question_id] === selected_answer;
@@ -487,12 +502,12 @@ app.post('/api/submit-answers', async (req, res) => {
 
       await db.promise().query(
         `INSERT INTO student_answers (student_id, question_id, selected_answer, is_correct) 
-         VALUES (?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE selected_answer = VALUES(selected_answer), is_correct = VALUES(is_correct)`,
         [userId, question_id, selected_answer, isCorrect]
       );
     }
 
-    // ✅ Insert or update grade
     const totalQuestions = answers.length;
     const gradePercentage = (correctAnswersCount / totalQuestions) * 100;
     const status = "Submitted";
@@ -507,14 +522,12 @@ app.post('/api/submit-answers', async (req, res) => {
       [userId, assignmentId, totalQuestions, correctAnswersCount, gradePercentage, status]
     );
 
-    // ✅ Insert check-in log
     await db.promise().query(
       `INSERT INTO student_checkin_logs (student_id, assignment_id, action, timestamp)
        VALUES (?, ?, ?, NOW())`,
       [userId, assignmentId, "Submitted answers"]
     );
 
-    // ✅ Commit transaction
     await db.promise().query("COMMIT");
 
     res.status(200).json({
