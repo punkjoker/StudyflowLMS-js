@@ -406,27 +406,39 @@ app.get('/api/course-details/:courseId', (req, res) => {
   });
 });
 
-// Add a new note for a course
+// Add notes to a course
 app.post('/api/courses/:courseId/notes', (req, res) => {
-  const { courseId } = req.params;
+  const courseId = Number(req.params.courseId); // Ensure courseId is a number
   const { title, content } = req.body;
 
-  // Validate the input
-  if (!title || !content) {
-    return res.status(400).send('Title and content are required');
+  console.log('Received courseId:', courseId);
+  console.log('Received title:', title);
+  console.log('Received content:', content);
+
+  if (isNaN(courseId) || courseId <= 0) {
+    return res.status(400).json({ error: 'Invalid course ID' });
   }
 
-  // Insert the note into the database
+  if (!title || !content) {
+    return res.status(400).json({ error: 'Title and content are required' });
+  }
+
   const query = 'INSERT INTO notes (course_id, title, content) VALUES (?, ?, ?)';
 
   db.execute(query, [courseId, title, content], (err, result) => {
     if (err) {
-      console.error('Error inserting note into the database:', err);
-      return res.status(500).send('Error adding note');
+      console.error('Database error:', err);
+      return res.status(500).json({ error: 'Database error while adding note' });
     }
-    res.status(200).send({ message: 'Note added successfully', noteId: result.insertId });
+
+    console.log('Note added successfully, ID:', result.insertId);
+    res.status(201).json({
+      message: 'Note added successfully',
+      noteId: result.insertId,
+    });
   });
 });
+
 
 // Route to handle course enrollment
 app.post('/api/enroll', (req, res) => {
@@ -624,6 +636,141 @@ app.get('/api/grades/:userId', (req, res) => {
   });
 });
 
+//awardbadges
+app.post('/api/badges/award', async (req, res) => {
+  const { userId, courseId, badgeName } = req.body;
+  const dateEarned = new Date().toISOString().split('T')[0]; // Current date
+
+  const query = `
+    INSERT INTO badges (user_id, course_id, name, date_earned) 
+    VALUES (?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE date_earned = VALUES(date_earned)
+  `;
+
+  db.execute(query, [userId, courseId, badgeName, dateEarned], (err, result) => {
+    if (err) {
+      console.error("Error awarding badge:", err);
+      res.status(500).json({ error: "Failed to award badge" });
+    } else {
+      res.status(200).json({ message: "Badge awarded successfully!" });
+    }
+  });
+});
+//api bdage
+app.post('/api/earn-badge', async (req, res) => {
+  const { courseId, topicTitle } = req.body;
+  const userId = req.session.userId; // Get user ID from session
+
+  if (!userId || !courseId || !topicTitle) {
+      return res.status(400).json({ error: "Missing required fields." });
+  }
+
+  try {
+      const badgeName = `Completed: ${topicTitle}`;
+      const badgeImage = `/badges/${topicTitle.replace(/\s+/g, '_')}.png`;
+      const dateEarned = new Date().toISOString().split('T')[0]; // Format as YYYY-MM-DD
+
+      // Insert badge into database
+      await db.promise().query(
+          `INSERT INTO badges (user_id, course_id, badge_name, badge_image, date_earned)
+           VALUES (?, ?, ?, ?, ?)
+           ON DUPLICATE KEY UPDATE date_earned = VALUES(date_earned)`,
+          [userId, courseId, badgeName, badgeImage, dateEarned]
+      );
+
+      res.status(200).json({ message: "Badge earned successfully!", badge: { name: badgeName, image: badgeImage, date_earned: dateEarned } });
+  } catch (error) {
+      console.error("Error assigning badge:", error);
+      res.status(500).json({ error: "Failed to assign badge." });
+  }
+});
+
+// Fetch Submissions for Instructor
+app.get('/api/submissions', (req, res) => {
+  const userId = req.query.userId; // Use userId like frontend
+
+  // Validate userId
+  if (!userId) {
+    return res.status(400).json({ message: 'User ID is required' });
+  }
+
+  // SQL query to join students, grades, assignments, and courses
+  const query = `
+    SELECT students.first_name, students.last_name, assignments.title AS assignment_title,
+           grades.correct_answers, grades.total_questions, grades.grade_percentage
+    FROM grades
+    JOIN students ON students.id = grades.student_id
+    JOIN assignments ON assignments.id = grades.assignment_id
+    JOIN courses ON courses.id = assignments.course_id
+    WHERE courses.instructor_id = ?;
+  `;
+
+  db.execute(query, [userId], (err, results) => {
+    if (err) {
+      console.error('Error fetching submissions:', err);
+      return res.status(500).json({ message: 'Error fetching submissions', error: err });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'No submissions found for this user' });
+    }
+
+    res.status(200).json(results);
+  });
+});
+
+// ✅ Route to Fetch Students
+app.get('/api/students', (req, res) => {
+  const sql = 'SELECT id, first_name, last_name FROM students';
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error fetching students:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+// ✅ Route to Upload Certificate
+app.post('/api/certificates', upload.single('certificate'), (req, res) => {
+  const { student_id, remarks } = req.body;
+  const filePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+  if (!student_id || !remarks || !filePath) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  const sql = 'INSERT INTO certificates (student_id, remarks, file_path) VALUES (?, ?, ?)';
+  db.query(sql, [student_id, remarks, filePath], (err, result) => {
+    if (err) {
+      console.error('Error inserting certificate:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      res.json({ message: 'Certificate uploaded successfully' });
+    }
+  });
+});
+
+// Route to Fetch Certificates
+app.get('/api/certificates', (req, res) => {
+  const studentId = req.query.student_id;  // Get student_id from query parameter
+  
+  if (!userId) {
+    return res.status(400).json({ error: 'Student ID is required' });
+  }
+
+  const sql = 'SELECT id, student_id, name, remarks, file, uploaded_at FROM certificates WHERE student_id = ?';
+  
+  db.query(sql, [studentId], (err, results) => {
+    if (err) {
+      console.error('Error fetching certificates:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      res.json(results);  // Send the fetched certificates
+    }
+  });
+});
 
 // Start server
 app.listen(port, () => {

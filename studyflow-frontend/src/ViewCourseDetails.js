@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import './ViewCourseDetails.css';
@@ -9,12 +9,11 @@ const ViewCourseDetails = () => {
   const [activeTab, setActiveTab] = useState('outline'); // Default tab
   const [activeNote, setActiveNote] = useState(null);
   const notesContainerRef = useRef(null);
+  const [isFullScreen, setIsFullScreen] = useState(false); // Fullscreen mode
+  const [loadingBadge, setLoadingBadge] = useState(false); // Badge loading state
 
-  useEffect(() => {
-    fetchCourseDetails();
-  }, [courseId]);
-
-  const fetchCourseDetails = async () => {
+  // Define fetchCourseDetails with useCallback to prevent unnecessary re-renders
+  const fetchCourseDetails = useCallback(async () => {
     try {
       const response = await axios.get(`http://localhost:5000/api/course-details/${courseId}`, { withCredentials: true });
       setCourseDetails(response.data);
@@ -24,10 +23,42 @@ const ViewCourseDetails = () => {
     } catch (error) {
       console.error('Error fetching course details:', error.message, error.response ? error.response.data : '');
     }
-  };
+  }, [courseId]);
+
+  useEffect(() => {
+    fetchCourseDetails();
+  }, [courseId, fetchCourseDetails]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+  };
+
+  // Toggle Fullscreen Mode
+  const toggleFullScreen = () => {
+    setIsFullScreen(!isFullScreen);
+  };
+
+  // Proceed to Next Topic & Earn Badge
+  const handleCompleteTopic = async () => {
+    if (!activeNote) return;
+
+    setLoadingBadge(true);
+    try {
+      await axios.post('http://localhost:5000/api/earn-badge', {
+        courseId,
+        topicTitle: activeNote.title, // Badge will be named after the topic
+      }, { withCredentials: true });
+
+      alert(`🎉 Congratulations! You earned a badge for completing "${activeNote.title}"`);
+
+      // Refresh badges tab to show the new badge
+      fetchCourseDetails();
+    } catch (error) {
+      console.error('Error earning badge:', error);
+      alert('Failed to earn badge. Please try again.');
+    } finally {
+      setLoadingBadge(false);
+    }
   };
 
   if (!courseDetails) {
@@ -35,7 +66,7 @@ const ViewCourseDetails = () => {
   }
 
   return (
-    <div className="course-details">
+    <div className={`course-details ${isFullScreen ? 'fullscreen' : ''}`}>
       <h2>{courseDetails.title}</h2>
       <p><strong>Description:</strong> {courseDetails.description}</p>
       
@@ -54,20 +85,20 @@ const ViewCourseDetails = () => {
 
       {/* Tab Content */}
       <div className="tab-content">
-      {activeTab === 'outline' && (
-  <div className="outline">
-    <h3>Course Outline</h3>
-    <ul>
-      {courseDetails.notes && courseDetails.notes.length > 0 ? (
-        courseDetails.notes.map((note) => (
-          <li key={note.id}>{note.title}</li>
-        ))
-      ) : (
-        <p>No outline available.</p>
-      )}
-    </ul>
-  </div>
-)}
+        {activeTab === 'outline' && (
+          <div className="outline">
+            <h3>Course Outline</h3>
+            <ul>
+              {courseDetails.notes && courseDetails.notes.length > 0 ? (
+                courseDetails.notes.map((note) => (
+                  <li key={note.id}>{note.title}</li>
+                ))
+              ) : (
+                <p>No outline available.</p>
+              )}
+            </ul>
+          </div>
+        )}
 
         {activeTab === 'resources' && (
           <div className="resources">
@@ -93,8 +124,16 @@ const ViewCourseDetails = () => {
               <div className="notes-content">
                 {activeNote ? (
                   <>
-                    <h4>{activeNote.title}</h4>
+                    <div className="notes-header">
+                      <h4>{activeNote.title}</h4>
+                      <button onClick={toggleFullScreen} className="fullscreen-btn">
+                        {isFullScreen ? 'Exit Fullscreen' : 'View Fullscreen'}
+                      </button>
+                    </div>
                     <p>{activeNote.content}</p>
+                    <button onClick={handleCompleteTopic} className="complete-btn" disabled={loadingBadge}>
+                      {loadingBadge ? 'Processing...' : '✅ Complete Topic & Earn Badge'}
+                    </button>
                   </>
                 ) : (
                   <p>Select a note to view its content.</p>
@@ -111,8 +150,13 @@ const ViewCourseDetails = () => {
               {courseDetails.badges && courseDetails.badges.length > 0 ? (
                 courseDetails.badges.map((badge, index) => (
                   <div key={index} className="badge">
-                    <img src={badge.image} alt={badge.name} />
+                    <img src={`http://localhost:5000/${badge.badge_image}`} alt={badge.name} />
                     <p>{badge.name}</p>
+                    <small>🏆 Earned on: {badge.date_earned}</small>
+                    <br />
+                    <a href={`http://localhost:5000/${badge.badge_image}`} download={`StudyFlowLMS_Badge_${badge.name}.png`}>
+                      📥 Download
+                    </a>
                   </div>
                 ))
               ) : (

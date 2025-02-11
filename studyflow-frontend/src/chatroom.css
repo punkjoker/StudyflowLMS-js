@@ -1,79 +1,51 @@
-.chat-room {
+.certificate-upload {
   display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 400px;
-  margin: 0 auto;
+  justify-content: center;
   padding: 20px;
-  box-sizing: border-box;
 }
 
-.messages-container {
-  flex: 1;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 10px;
-  background-color: #f9f9f9;
-}
-
-.message {
-  margin-bottom: 15px;
-  padding: 10px;
-  border-radius: 5px;
-  background-color: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.message.self {
-  background-color: #007BFF;
-  color: #fff;
-  align-self: flex-end;
-}
-
-.message-sender {
-  font-weight: bold;
-  margin-bottom: 5px;
-  font-size: 14px;
-}
-
-.message-content {
-  font-size: 16px;
-}
-
-.message-timestamp {
-  font-size: 12px;
-  color: #888;
-  text-align: right;
-}
-
-.message-input {
+.upload-form {
   display: flex;
-  gap: 10px;
-  margin-top: 20px;
+  flex-direction: column;  /* Ensures all items are stacked vertically */
+  gap: 15px;               /* Adds space between each item */
+  width: 100%;
+  max-width: 400px;        /* Optional: You can limit the width of the form */
 }
 
-textarea {
-  flex: 1;
-  height: 50px;
+.upload-form label {
+  font-weight: bold;
+  margin-bottom: 5px;      /* Adds space below each label */
+  font-size: 14px;
+}
+
+.upload-form select,
+.upload-form textarea,
+.upload-form input[type="file"] {
   padding: 10px;
   font-size: 14px;
   border: 1px solid #ddd;
   border-radius: 5px;
-  resize: none;
+  width: 100%;            /* Ensures each element takes full width of its container */
 }
 
-button {
+.upload-form textarea {
+  height: 80px;           /* Keeps the textarea height consistent */
+  resize: none;           /* Disables resizing of the textarea */
+}
+
+.upload-form button {
   padding: 10px 20px;
-  background-color: #007BFF;
+  background-color: #28a745;
   color: #fff;
   border: none;
   border-radius: 5px;
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.3s;
+  width: 120px;           /* Keeps the button at a fixed size */
+  align-self: flex-start; /* Aligns the button to the left */
 }
 
-button:hover {
-  background-color: #0056b3;
+.upload-form button:hover {
+  background-color: #218838;
 }

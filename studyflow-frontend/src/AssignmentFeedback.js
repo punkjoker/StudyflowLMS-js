@@ -1,80 +1,106 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import axios from 'axios';
 import { UserContext } from './UserContext';
 import './AssignmentFeedback.css';
 
 const AssignmentFeedback = () => {
-  const { user } = useContext(UserContext);
+  const { userId } = useContext(UserContext);
   const [submissions, setSubmissions] = useState([]);
-  const [feedback, setFeedback] = useState({ assignmentId: '', comments: '' });
-  const [message, setMessage] = useState('');
+  const feedbackRef = useRef(); // Reference for printing
 
   useEffect(() => {
-    if (user && user.id) {
-      fetchSubmissions();
-    }
-  }, [user]);
+    const fetchSubmissions = async () => {
+      try {
+        console.log(`Fetching submissions for user ID: ${userId}`);
+        const response = await axios.get(`http://localhost:5000/api/submissions?userId=${userId}`, {
+          withCredentials: true,
+        });
 
-  // Fetch submissions for the instructor
-  const fetchSubmissions = async () => {
-    try {
-      const response = await axios.get(`http://localhost:5000/api/instructor/submissions?instructor_id=${user.id}`, { withCredentials: true });
-      setSubmissions(response.data);
-    } catch (error) {
-      console.error('Error fetching submissions:', error);
-    }
-  };
+        setSubmissions(response.data);
+      } catch (error) {
+        console.error('Error fetching submissions:', error.message);
+      }
+    };
 
-  const handleFeedbackChange = (e) => {
-    const { name, value } = e.target;
-    setFeedback({ ...feedback, [name]: value });
-  };
+    fetchSubmissions();
+  }, [userId]);
 
-  const handleFeedbackSubmit = async (e) => {
-    e.preventDefault();
-    if (!user || !user.id) {
-      setMessage('User not logged in or user ID not available');
-      return;
+  // ✅ Print / Save as PDF
+  const handlePrint = () => {
+    if (feedbackRef.current) {
+      const newWindow = window.open('', '', 'width=800,height=600');
+      newWindow.document.write(`
+        <html>
+          <head>
+            <title>Assignment Feedback Report</title>
+            <style>
+              @media print {
+                .button-container { display: none !important; }
+              }
+              body { font-family: Arial, sans-serif; }
+              .header { text-align: center; font-size: 22px; font-weight: bold; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background-color: #f4f4f4; }
+            </style>
+          </head>
+          <body>
+            <h2 class="header">Assignment Feedback Report</h2>
+            ${feedbackRef.current.innerHTML}
+          </body>
+        </html>
+      `);
+      newWindow.document.close();
+      newWindow.print();
+      newWindow.close();
     }
-    try {
-      await axios.post('http://localhost:5000/api/instructor/feedback', feedback, { withCredentials: true });
-      setFeedback({ assignmentId: '', comments: '' });
-      setMessage('Feedback submitted successfully');
-    } catch (error) {
-      console.error('Error submitting feedback:', error.response ? error.response.data : error.message);
-      setMessage(`Error submitting feedback: ${error.response ? error.response.data : error.message}`);
-    }
-  };
-
-  const handleViewSubmissionDetails = (submissionId) => {
-    // Handle the action to view detailed submission, e.g., redirect or show a modal with details
-    console.log('View details for submission ID:', submissionId);
   };
 
   return (
     <div className="assignment-feedback">
-      <h3>Assignment Feedback</h3>
-      
-      {/* List of submissions */}
-      <div className="submissions-list">
-        <h4>Submissions</h4>
-        {submissions.length === 0 ? (
-          <p>No submissions available.</p>
-        ) : (
-          submissions.map((submission) => (
-            <div key={submission.id} className="submission-item">
-              <p><strong>Student:</strong> {submission.student_name}</p>
-              <p><strong>Assignment:</strong> {submission.assignment_title}</p>
-              <p><strong>Submission Date:</strong> {new Date(submission.submission_date).toLocaleString()}</p>
-              <button onClick={() => handleViewSubmissionDetails(submission.id)}>
-                View Submission Details
-              </button>
-            </div>
-          ))
-        )}
+      <h3>Student Submissions</h3>
+
+      <div ref={feedbackRef} className="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student Name</th>
+              <th>Assignment Title</th>
+              <th>Marks</th>
+              <th>Percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            {submissions.length === 0 ? (
+              <tr>
+                <td colSpan="5" className="no-data">No submissions available.</td>
+              </tr>
+            ) : (
+              submissions.map((submission, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{submission.first_name} {submission.last_name}</td>
+                  <td>{submission.assignment_title}</td>
+                  <td>{submission.correct_answers} / {submission.total_questions}</td>
+                  <td>{submission.grade_percentage}%</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {message && <div className="message">{message}</div>}
+      {/* Print & Save Button */}
+      <div className="button-container">
+        <button 
+          className="print-btn" 
+          onClick={handlePrint} 
+          disabled={submissions.length === 0} // Disable if no submissions
+        >
+          Print transcript
+        </button>
+      </div>
     </div>
   );
 };

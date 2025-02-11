@@ -25,8 +25,8 @@ const InstructorDashboard = () => {
         </section>
 
         <section className="dashboard-section right">
-          <h3>Chatroom</h3>
-          <Link to="/chatroom" className="dashboard-link">Go to Chatroom</Link>
+          <h3>Certificates</h3>
+          <Link to="/chatroom" className="dashboard-link">Upload Certicates</Link>
         </section>
       </div>
     </div>

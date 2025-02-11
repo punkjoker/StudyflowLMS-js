@@ -4,25 +4,25 @@
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  margin: 20px auto; /* Adding some margin for better spacing */
-  background-color: #f9f9f9; /* Slightly off-white background for a soft look */
-  border-radius: 10px; /* Rounded corners for a modern feel */
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Slightly larger shadow for emphasis */
-  max-width: 800px;
+  margin: 20px auto;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
   width: 100%;
 }
 
 /* Styles for each course section */
 .course-section {
   width: 100%;
-  margin-bottom: 30px; /* Increased margin for better separation */
+  margin-bottom: 30px;
 }
 
 .course-section h3 {
-  margin-bottom: 15px; /* Increased spacing */
+  margin-bottom: 15px;
   text-align: center;
-  color: #333; /* Darker color for better readability */
-  font-weight: bold; /* Bolder text */
+  color: #333;
+  font-weight: bold;
 }
 
 /* Form styling */
@@ -30,80 +30,43 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%; /* Ensuring form takes full width */
+  width: 100%;
 }
 
+/* Input and textarea styling */
 .course-section form input[type="text"],
 .course-section form textarea {
-  width: 100%;
-  max-width: 600px;
-  margin-bottom: 15px; /* Increased margin for better spacing */
-  padding: 12px; /* Slightly larger padding */
+  width: 90% !important;  /* Force input width */
+  max-width: 800px !important;  /* Make sure it's larger */
+  margin-bottom: 15px;
+  padding: 16px;  /* Increase padding */
   border: 1px solid #ccc;
   border-radius: 5px;
-  box-sizing: border-box; /* Ensure padding and border are included in width/height */
-  font-size: 16px; /* Slightly larger font for better readability */
+  box-sizing: border-box;
+  font-size: 18px;  /* Make text slightly bigger */
 }
 
+/* Textarea specific styles */
 .course-section form textarea {
-  resize: vertical; /* Allow resizing only vertically */
-  height: 120px; /* Set a reasonable height for the textarea */
+  resize: vertical;
+  min-height: 250px !important;  /* Increase height significantly */
+  height: auto;
 }
 
+/* Button styling */
 .course-section form button {
-  padding: 12px 25px; /* Slightly larger padding for better touch targets */
+  padding: 14px 30px;
   border: none;
   background-color: #007bff;
   color: white;
   border-radius: 5px;
   cursor: pointer;
-  max-width: 200px;
+  max-width: 250px;
   width: 100%;
-  transition: background-color 0.3s ease; /* Smooth transition on hover */
+  font-size: 18px;
+  transition: background-color 0.3s ease;
 }
 
 .course-section form button:hover {
   background-color: #0056b3;
-}
-
-/* Notes list styling */
-.course-section ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  width: 100%; /* Ensure the list takes full width */
-}
-
-.course-section ul li {
-  margin-bottom: 15px; /* Increased margin for better spacing */
-  background-color: #fff; /* White background for notes */
-  padding: 10px;
-  border-radius: 5px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Light shadow for note items */
-}
-
-.course-section ul li h4 {
-  margin: 0 0 5px 0; /* Slight margin below title */
-  font-size: 18px; /* Larger font for titles */
-  color: #007bff; /* Blue color for titles */
-}
-
-.course-section ul li p {
-  margin: 0;
-  color: #555; /* Gray color for note content */
-  font-size: 16px; /* Consistent font size with form inputs */
-}
-
-/* Popup styling */
-.popup {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background-color: #4caf50;
-  color: white;
-  padding: 12px 20px;
-  border-radius: 5px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2); /* Slightly darker shadow for visibility */
-  z-index: 1000;
-  font-size: 16px; /* Consistent font size */
 }

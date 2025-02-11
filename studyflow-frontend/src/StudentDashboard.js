@@ -22,7 +22,7 @@ const StudentDashboard = () => {
         </section>
 
         <section className="dashboard-section">
-          <h3>Progress</h3>
+          <h3>Courses in Progress</h3>
           <p>Track your progress in enrolled courses.</p>
           <Link to="/progress" className="dashboard-link">View Progress</Link>
         </section>

@@ -1,105 +1,32 @@
-/* General Course Details Styling */
-section.course-details {
-  font-family: Arial, sans-serif;
-  margin: 20px;
+.course-details {
+  padding: 20px;
 }
 
-h2 {
-  color: #333;
+.tabs {
+  margin-bottom: 20px;
 }
 
-/* Assignment Details Styling */
-.assignment-item {
-  margin-bottom: 30px;
-}
-
-.assignment-item h4 {
-  font-size: 20px;
-  color: #333;
-}
-
-.assignment-item p {
-  font-size: 16px;
-  color: #555;
-}
-
-.submission-area textarea {
-  width: 100%;
-  height: 120px;
+.tabs button {
   padding: 10px;
-  margin-top: 10px;
-  font-size: 14px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-}
-
-.submission-area input[type="file"] {
-  margin-top: 10px;
-}
-
-.submission-area button {
-  margin-top: 10px;
-  padding: 10px 20px;
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  border-radius: 5px;
+  margin-right: 5px;
   cursor: pointer;
+  border: none;
+  background-color: #007bff;
+  color: white;
 }
 
-.submission-area button:hover {
+.tabs button.active {
   background-color: #0056b3;
 }
 
-.submission-area button[type="button"] {
-  background-color: #f44336;
-}
-
-.submission-area button[type="button"]:hover {
-  background-color: #d32f2f;
-}
-
-/* Questions and Checkboxes Section */
-.questions-container {
-  margin-top: 30px;
-}
-
-.questions-container h3 {
-  font-size: 20px;
-  color: #333;
-  margin-bottom: 15px;
-}
-
-.questions-container ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.questions-container li {
-  margin-bottom: 10px;
-}
-
-.questions-container label {
-  font-size: 16px;
-  color: #555;
-}
-
-.questions-container input[type="checkbox"] {
-  margin-right: 10px;
-}
-
-/* Notes Section Styling */
 .notes-container {
   display: flex;
-  margin-top: 20px;
+  gap: 20px;
 }
 
 .notes-sidebar {
-  width: 30%;
-  height: 500px;
-  overflow-y: scroll;
-  border-right: 1px solid #ddd;
-  padding-right: 20px;
+  width: 200px;
+  border-right: 2px solid #ddd;
 }
 
 .notes-sidebar ul {
@@ -110,65 +37,84 @@ h2 {
 .notes-sidebar li {
   padding: 10px;
   cursor: pointer;
-  font-size: 16px;
-  color: #555;
-}
-
-.notes-sidebar li.active {
-  font-weight: bold;
-  color: #007BFF;
-  background-color: #f0f8ff;
-}
-
-.notes-content {
-  flex: 1;
-  padding-left: 20px;
-  height: 500px;
-  overflow-y: auto;
-}
-
-.notes-content h3 {
-  margin-top: 0;
-  font-size: 24px;
-  color: #333;
-}
-
-.notes-content p {
-  font-size: 16px;
-  color: #555;
-}
-
-/* Outline Section Styling */
-.outline-container {
-  margin-top: 20px;
-}
-
-.outline h3 {
-  font-size: 20px;
-  color: #333;
-  border-bottom: 2px solid #007BFF;
-  padding-bottom: 5px;
-}
-
-.outline ul {
-  list-style-type: none;
-  padding: 0;
-  margin-top: 10px;
-}
-
-.outline li {
-  padding: 10px 5px;
-  font-size: 16px;
-  color: #555;
   border-bottom: 1px solid #ddd;
 }
 
-.outline li:last-child {
-  border-bottom: none;
+.notes-sidebar li.active {
+  background-color: #007bff;
+  color: white;
 }
 
-.outline li:hover {
-  background-color: #f9f9f9;
+.notes-content {
+  flex-grow: 1;
+}
+
+.notes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fullscreen-btn {
+  padding: 5px 10px;
+  background: #007bff;
+  color: white;
+  border: none;
   cursor: pointer;
-  color: #007BFF;
+}
+
+.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  z-index: 9999;
+  padding: 20px;
+  overflow: auto;
+}
+
+/* 🏅 Badge Styles */
+.badge-list {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  border: 2px solid #007bff;
+  padding: 10px;
+  text-align: center;
+  border-radius: 8px;
+  background: #f8f9fa;
+  width: 200px;
+}
+
+.badge img {
+  width: 100px;
+  height: 100px;
+}
+
+.badge a {
+  display: inline-block;
+  margin-top: 10px;
+  text-decoration: none;
+  color: white;
+  background: #007bff;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+.complete-btn {
+  margin-top: 15px;
+  padding: 10px 15px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.complete-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
